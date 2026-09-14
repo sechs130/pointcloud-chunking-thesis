@@ -40,21 +40,21 @@
   <g>
     <rect class="card" x="536" y="56" width="300" height="86"/>
     <rect x="536" y="56" width="7" height="86" fill="#2a78d6" rx="3"/>
-    <text class="lab"  x="560" y="86">Chunk A → <tspan fill="#2a78d6">buildings</tspan></text>
+    <text class="lab"  x="560" y="86">Chunk A → <tspan fill="#2a78d6">Gebäude</tspan></text>
     <text class="mono" x="560" y="112">p = 0,91</text>
     <text class="mono" x="700" y="112">d = klein</text>
     <text class="sml"  x="560" y="132">tief im Chunk, voller Kontext</text>
 
     <rect class="card" x="536" y="158" width="300" height="86"/>
     <rect x="536" y="158" width="7" height="86" fill="#1baf7a" rx="3"/>
-    <text class="lab"  x="560" y="188">Chunk B → <tspan fill="#1baf7a">vegetation</tspan></text>
+    <text class="lab"  x="560" y="188">Chunk B → <tspan fill="#1baf7a">Vegetation</tspan></text>
     <text class="mono" x="560" y="214">p = 0,52</text>
     <text class="mono" x="700" y="214">d = groß</text>
     <text class="sml"  x="560" y="234">am Rand, Kontext abgeschnitten</text>
 
     <rect class="card" x="536" y="260" width="300" height="86"/>
     <rect x="536" y="260" width="7" height="86" fill="#eb6834" rx="3"/>
-    <text class="lab"  x="560" y="290">Chunk C → <tspan fill="#eb6834">buildings</tspan></text>
+    <text class="lab"  x="560" y="290">Chunk C → <tspan fill="#eb6834">Gebäude</tspan></text>
     <text class="mono" x="560" y="316">p = 0,74</text>
     <text class="mono" x="700" y="316">d = mittel</text>
     <text class="sml"  x="560" y="336">teilweiser Kontext</text>
@@ -66,28 +66,28 @@
   <text class="hd" x="900" y="34">Vier Regeln, das Ergebnis entscheiden</text>
   <g>
     <rect class="card" x="900" y="56" width="364" height="72"/>
-    <text class="rule" x="922" y="84">majority</text>
+    <text class="rule" x="922" y="84">Mehrheitsentscheid</text>
     <text class="sml"  x="922" y="108">jede Stimme zählt gleich  ·  2 zu 1</text>
-    <text class="res"  fill="#2a78d6" x="1242" y="96" text-anchor="end">buildings</text>
+    <text class="res"  fill="#2a78d6" x="1242" y="96" text-anchor="end">Gebäude</text>
 
     <rect class="card" x="900" y="140" width="364" height="72"/>
-    <text class="rule" x="922" y="168">distance</text>
+    <text class="rule" x="922" y="168">Abstandsgewichtung</text>
     <text class="sml"  x="922" y="192">Gauß-Gewicht nach Abstand zum Zentrum</text>
-    <text class="res"  fill="#2a78d6" x="1242" y="180" text-anchor="end">buildings</text>
+    <text class="res"  fill="#2a78d6" x="1242" y="180" text-anchor="end">Gebäude</text>
 
     <rect class="card" x="900" y="224" width="364" height="72"/>
-    <text class="rule" x="922" y="252">confidence</text>
+    <text class="rule" x="922" y="252">Konfidenzgewichtung</text>
     <text class="sml"  x="922" y="276">Gewicht = maximale Klassenwahrscheinlichkeit</text>
-    <text class="res"  fill="#2a78d6" x="1242" y="264" text-anchor="end">buildings</text>
+    <text class="res"  fill="#2a78d6" x="1242" y="264" text-anchor="end">Gebäude</text>
 
     <rect class="card" x="900" y="308" width="364" height="72"/>
-    <text class="rule" x="922" y="336">distance_confidence</text>
+    <text class="rule" x="922" y="336">Kombinierte Gewichtung</text>
     <text class="sml"  x="922" y="360">beide Gewichte multipliziert</text>
-    <text class="res"  fill="#2a78d6" x="1242" y="348" text-anchor="end">buildings</text>
+    <text class="res"  fill="#2a78d6" x="1242" y="348" text-anchor="end">Gebäude</text>
   </g>
 
   <rect x="900" y="404" width="364" height="96" fill="#eef4fd" stroke="#2a78d6" stroke-width="2" rx="12"/>
   <text class="lab" x="922" y="434">Gemessen über alle sechs Chunker:</text>
-  <text class="lab" x="922" y="462" fill="#2a78d6">confidence 0,4096 mIoU</text>
-  <text class="sml" x="922" y="486">gegen majority 0,3242  —  0,085 Unterschied</text>
+  <text class="lab" x="922" y="462" fill="#2a78d6">Konfidenzgewichtung: 0,4096 mIoU</text>
+  <text class="sml" x="922" y="486">Mehrheitsentscheid: 0,3242 · Unterschied: 0,085</text>
 </svg>

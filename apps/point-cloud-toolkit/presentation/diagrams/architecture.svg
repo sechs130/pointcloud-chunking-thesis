@@ -12,6 +12,8 @@
     .par   { font:600 13px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#12805c }
     .parq  { font:400 12.5px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#7b7f88 }
     .note  { font:600 13.5px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#0a63c9 }
+    .train { fill:#2a78d6; font-weight:700 }
+    .test  { fill:#eb6834; font-weight:700 }
   </style>
   <defs>
     <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -25,15 +27,16 @@
 
   <rect class="data" x="40"  y="62" width="212" height="62"/>
   <text class="t" x="146" y="88">DALES PLY</text>
-  <text class="s" x="146" y="108">29 + 11 Szenen · 505 Mio. Punkte</text>
+  <text class="s" x="146" y="108"><tspan class="train">29 Training</tspan><tspan> / </tspan><tspan class="test">11 Test</tspan></text>
 
   <rect class="proc" x="312" y="62" width="212" height="62"/>
   <text class="t" x="418" y="88">Chunker</text>
   <text class="s" x="418" y="108">Index statt Punktkopie</text>
 
-  <rect class="data" x="584" y="62" width="212" height="62"/>
-  <text class="t" x="690" y="88">Chunk-Datensatz</text>
-  <text class="s" x="690" y="108">9.145 – 21.713 Train-Chunks</text>
+  <rect class="data" x="584" y="54" width="212" height="78"/>
+  <text class="t" x="690" y="78">Chunk-Datensatz</text>
+  <text class="s" x="690" y="102"><tspan class="train">Training: 9.145–21.713</tspan></text>
+  <text class="s" x="690" y="121"><tspan class="test">Test: 3.390–8.014</tspan></text>
 
   <text class="par"  x="848" y="88">szenen-parallel</text>
   <text class="parq" x="848" y="107">32 Worker</text>
@@ -114,10 +117,10 @@
   <!-- Kantenbeschriftungen, auf weißem Grund gesetzt -->
   <g>
     <rect x="404" y="162" width="86" height="18" fill="#ffffff"/>
-    <text class="edge" x="408" y="176">train split</text>
+    <text class="edge" x="408" y="176">Training</text>
 
     <rect x="1122" y="196" width="76" height="18" fill="#ffffff"/>
-    <text class="edge" x="1124" y="210">test split</text>
+    <text class="edge" x="1124" y="210">Test</text>
 
     <rect x="700" y="282" width="128" height="18" fill="#f7f8fa"/>
     <text class="edge" x="704" y="296">bester Checkpoint</text>
