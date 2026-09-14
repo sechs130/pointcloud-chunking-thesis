@@ -22,6 +22,15 @@
   --accent-soft:    #eef4fd;
   --warm:           #c8541f;
   --ok:             #12805c;
+  --danger:         #b42318;
+  --surface:        #f6f7f9;
+  --hairline:       #d9dce1;
+  --slide-title-size: 1.52em;
+  --slide-body-size: 0.72em;
+  --slide-caption-size: 0.48em;
+  --slide-gap:      1.1em;
+  --slide-pad-x:    0.92rem;
+  --slide-pad-bottom: 2.5rem;
 
   /* Federkurven, kritisch gedämpft (kein Überschwingen) — Apple-Voreinstellung */
   --spring:         cubic-bezier(0.32, 0.72, 0, 1);
@@ -811,7 +820,32 @@ body.deck-immersive .deck-chrome:hover { opacity: 1; }
 /* ------------------------------------------------ Bewerbungsstory 2026 */
 
 .reveal .slides section:not(#title-slide) { padding-top: 4.25rem !important; }
-.reveal .slides section h2 { max-width: 1320px; font-size: 1.52em; line-height: 1.08; margin-bottom: 0.62em; }
+.reveal .slides section h2 { max-width: 1320px; font-size: var(--slide-title-size); line-height: 1.08; margin-bottom: 0; }
+
+.reveal .slides section.main-layout {
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 4.15rem var(--slide-pad-x) var(--slide-pad-bottom) !important;
+}
+.reveal section.main-layout > h2 { flex: 0 0 auto; }
+.reveal section.main-layout > .slide-content {
+  flex: 1 1 auto;
+  min-height: 620px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 0.55em;
+  padding-bottom: 0.2em;
+}
+
+/* Reveal positioniert Sections über eine Transformation; eine feste innere
+   Arbeitsfläche nutzt das 16:9-Raster verlässlicher als Viewport-Einheiten. */
+.reveal section.main-layout > .slide-content > :only-child {
+  width: 100%;
+}
 
 .pipeline-nav {
   position: fixed;
@@ -822,18 +856,16 @@ body.deck-immersive .deck-chrome:hover { opacity: 1; }
   transform: none;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  background: rgb(255 255 255 / 92%);
-  border: 1px solid var(--separator);
-  border-top: 0;
-  border-radius: 0 0 12px 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 18px rgb(0 0 0 / 6%);
+  background: rgb(255 255 255 / 96%);
+  border: 0;
+  overflow: visible;
+  box-shadow: none;
 }
-.pipeline-nav a { padding: 0.72rem 0.45rem 0.64rem; text-align: center; color: var(--label-2); text-decoration: none; font: 650 0.72rem/1.15 system-ui, sans-serif; border-right: 1px solid var(--separator); }
-.pipeline-nav a:last-child { border-right: 0; }
-.pipeline-nav a b { display: block; color: var(--label-3); font-size: 0.64rem; margin-bottom: 0.16rem; }
-.pipeline-nav a.active { color: #fff; background: var(--accent); }
-.pipeline-nav a.active b { color: #dbeaff; }
+.pipeline-nav a { position: relative; padding: 0.58rem 0.32rem 0.52rem; text-align: center; color: var(--label-3); text-decoration: none; font: 620 0.72rem/1.15 system-ui, sans-serif; border-bottom: 2px solid var(--separator); transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+.pipeline-nav a b { display: inline; color: inherit; font-size: 0.66rem; margin-right: 0.28rem; }
+.pipeline-nav a:hover { color: var(--label); border-color: var(--label-3); }
+.pipeline-nav a.active { color: var(--accent); background: transparent; border-bottom: 4px solid var(--accent); }
+.pipeline-nav a.active b { color: var(--accent); }
 body.on-title .pipeline-nav, body.on-backup .pipeline-nav { display: none; }
 
 .hero-visual { margin: 1.55em auto 0; display: flex; align-items: center; justify-content: center; gap: 0.58em; font-size: 0.84em; }
@@ -932,6 +964,46 @@ body.on-title .pipeline-nav, body.on-backup .pipeline-nav { display: none; }
 .fit-map{display:grid;grid-template-columns:1fr 1fr;gap:1.1em 2.2em;margin:1.2em auto;width:86%}.fit-map div{border-left:6px solid var(--accent);padding:.65em .8em}.fit-map strong,.fit-map span{display:block}.fit-map strong{font-size:.72em}.fit-map span{font-size:.48em;color:var(--label-2);margin-top:.25em}
 .closing-three{display:grid;grid-template-columns:repeat(3,1fr);gap:1.8em;margin:1.4em 0}.closing-three div{border-top:7px solid var(--accent);padding:.8em .25em}.closing-three span,.closing-three strong{display:block}.closing-three span{font-size:.5em;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}.closing-three strong{font-size:.68em;line-height:1.25;margin-top:.45em}
 .compact-stack { max-width: 1100px; margin: 0 auto; }
+
+/* Interaktive Zerlegung: echte Browserlogik, reduzierte Bedienung. */
+.chunk-explorer { display: grid; grid-template-rows: auto 1fr; min-height: 0; height: 100%; }
+.chunk-controls { display: flex; align-items: center; gap: 1.25em; margin: 0 auto 0.5em; }
+.chunk-controls button { appearance: none; border: 0; border-bottom: 2px solid var(--separator-2); background: transparent; color: var(--label-2); padding: 0.42em 0.08em 0.35em; font: 650 0.55em/1.2 system-ui, sans-serif; cursor: pointer; transition: color 140ms ease, border-color 140ms ease, transform 100ms ease-out; }
+.chunk-controls button:hover { color: var(--label); }
+.chunk-controls button.active { color: var(--accent); border-color: var(--accent); }
+.chunk-controls button.pressed { transform: scale(0.97); }
+.chunk-controls button:focus-visible { outline: 3px solid #7fb2f0; outline-offset: 5px; }
+.chunk-stage { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 1em; align-items: stretch; min-height: 0; }
+.chunk-stage canvas { width: 100%; height: 100%; max-height: 430px; background: var(--surface); }
+.chunk-reading { align-self: center; border-left: 2px solid var(--hairline); padding-left: 0.85em; }
+.chunk-reading strong, .chunk-reading span { display: block; }
+.chunk-reading strong { color: var(--accent); font-size: 1.2em; line-height: 1; margin-top: 0.5em; letter-spacing: -0.025em; }
+.chunk-reading strong:first-child { margin-top: 0; }
+.chunk-reading span { color: var(--label-2); font-size: var(--slide-caption-size); margin-top: 0.18em; }
+.chunk-explanation { margin: 0.25em 0 0 !important; text-align: center; font-size: var(--slide-caption-size) !important; color: var(--label-2); }
+
+/* Ergebnissicht wird direkt aus evidence.js aufgebaut. */
+.result-visual { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 0.9em; align-items: center; height: 100%; min-height: 0; }
+.result-visual svg { width: 100%; height: 100%; max-height: 470px; overflow: visible; }
+.chart-axis { stroke: #656b74; stroke-width: 2; }
+.chart-grid { stroke: #e1e3e7; stroke-width: 1; }
+.chart-tick { fill: #6b7078; font: 16px system-ui, sans-serif; }
+.chart-label { fill: #4b4f57; font: 600 17px system-ui, sans-serif; }
+.chart-point { fill: #8d98a4; stroke: white; stroke-width: 3; }
+.chart-point.winner { fill: var(--accent); }
+.chart-name { fill: #5b6169; font: 600 16px system-ui, sans-serif; }
+.chart-name.winner { fill: var(--accent); font-weight: 750; font-size: 19px; }
+.result-summary { border-left: 2px solid var(--hairline); padding-left: 0.75em; display: grid; gap: 0.72em; }
+.result-summary span, .result-summary b { display: block; }
+.result-summary span { color: var(--label-2); font-size: var(--slide-caption-size); }
+.result-summary b { color: var(--label); font-size: 1.7em; line-height: 1; letter-spacing: -0.03em; margin-bottom: 0.14em; }
+.result-summary span:first-child b { color: var(--accent); }
+
+@media print {
+  .pipeline-nav { display: none !important; }
+  .reveal .slides section.main-layout { padding-top: 2.2rem !important; }
+  .chunk-controls button:not(.active) { opacity: 0.45; }
+}
 
 @media (max-width: 1100px) {
   .pipeline-nav { left: 150px; width: calc(100vw - 440px); }

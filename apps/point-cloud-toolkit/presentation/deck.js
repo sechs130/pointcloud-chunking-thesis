@@ -63,6 +63,123 @@
     });
   }
 
+  function prepareSlideLayouts() {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.reveal .slides > section'));
+    var backupIndex = slides.findIndex(function (slide) { return slide.classList.contains('backup-divider'); });
+    slides.forEach(function (slide, index) {
+      if (index === 0 || (backupIndex >= 0 && index >= backupIndex)) return;
+      var heading = slide.querySelector(':scope > h2');
+      if (!heading || slide.querySelector(':scope > .slide-content')) return;
+      var content = document.createElement('div');
+      content.className = 'slide-content';
+      Array.prototype.slice.call(slide.childNodes).forEach(function (node) {
+        if (node === heading || (node.nodeType === 1 && node.matches('aside.notes'))) return;
+        content.appendChild(node);
+      });
+      slide.insertBefore(content, slide.querySelector(':scope > aside.notes'));
+      slide.classList.add('main-layout');
+    });
+  }
+
+  function initChunkExplorer() {
+    var explorer = document.querySelector('[data-chunk-explorer]');
+    var core = window.PointCloudCore;
+    if (!explorer || !core) return;
+    var cloud = core.parsePointCloud(core.generatedSampleText(), 'sample.ply');
+    var canvas = explorer.querySelector('canvas');
+    var context = canvas.getContext('2d');
+    var palette = ['#0a63c9', '#23836b', '#d46a32', '#7b61b3', '#c49a1a', '#4d86a8', '#a64b66', '#62707c'];
+
+    function render(strategy) {
+      var overlap = strategy === 'bisect_xy_overlap' ? 0.22 : (strategy === 'morton' ? 0.12 : 0);
+      var result = core.chunk(cloud, { strategy: strategy, targetPoints: 230, overlap: overlap, previewLimit: 0 });
+      var coverage = new Uint16Array(cloud.n);
+      var owner = new Int16Array(cloud.n);
+      owner.fill(-1);
+      result.chunks.forEach(function (chunk, chunkIndex) {
+        chunk.source_ids.forEach(function (pointIndex) {
+          coverage[pointIndex] += 1;
+          if (owner[pointIndex] < 0) owner[pointIndex] = chunkIndex;
+        });
+      });
+      var minX = Math.min.apply(null, cloud.x), maxX = Math.max.apply(null, cloud.x);
+      var minY = Math.min.apply(null, cloud.y), maxY = Math.max.apply(null, cloud.y);
+      var pad = 24;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = '#f7f8fa';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      var duplicate = 0;
+      for (var i = 0; i < cloud.n; i += 1) {
+        var x = pad + (cloud.x[i] - minX) / (maxX - minX || 1) * (canvas.width - 2 * pad);
+        var y = canvas.height - pad - (cloud.y[i] - minY) / (maxY - minY || 1) * (canvas.height - 2 * pad);
+        context.beginPath();
+        context.arc(x, y, coverage[i] > 1 ? 3.4 : 2.2, 0, Math.PI * 2);
+        context.fillStyle = palette[Math.max(0, owner[i]) % palette.length];
+        context.fill();
+        if (coverage[i] > 1) {
+          duplicate += 1;
+          context.strokeStyle = '#16181c';
+          context.lineWidth = 1.1;
+          context.stroke();
+        }
+      }
+      explorer.querySelector('[data-chunk-count]').textContent = String(result.chunks.length);
+      explorer.querySelector('[data-chunk-overlap]').textContent = Math.round(duplicate / cloud.n * 100) + ' %';
+      Array.prototype.forEach.call(explorer.querySelectorAll('[data-strategy]'), function (button) {
+        button.classList.toggle('active', button.dataset.strategy === strategy);
+        button.setAttribute('aria-pressed', button.dataset.strategy === strategy ? 'true' : 'false');
+      });
+    }
+
+    Array.prototype.forEach.call(explorer.querySelectorAll('[data-strategy]'), function (button) {
+      button.addEventListener('pointerdown', function () { button.classList.add('pressed'); });
+      button.addEventListener('pointerup', function () { button.classList.remove('pressed'); });
+      button.addEventListener('pointercancel', function () { button.classList.remove('pressed'); });
+      button.addEventListener('click', function () { render(button.dataset.strategy); });
+    });
+    render('xy');
+  }
+
+  function initResultChart() {
+    var svg = document.querySelector('[data-result-chart]');
+    var results = window.PointCloudEvidence && window.PointCloudEvidence.results;
+    if (!svg || !results) return;
+    var ns = 'http://www.w3.org/2000/svg';
+    var names = { xy: 'Raster', morton: 'Z-Kurve', kdtree: 'K-D-Baum', bisect_xy_overlap: 'Flächenteilung', rand_knn: 'Kugeln', rand_cyl: 'Zylinder' };
+    var rows = Object.keys(results.chunkers).map(function (id) {
+      var row = results.chunkers[id];
+      var merge = row.merges[row.best_merge];
+      return { id: id, name: names[id] || id, hours: row.total_hours, quality: merge.miou };
+    });
+    var left = 86, right = 1010, top = 34, bottom = 350;
+    function x(hours) { return left + (hours - 13) / 23 * (right - left); }
+    function y(quality) { return bottom - (quality - 0.2) / 0.4 * (bottom - top); }
+    function add(tag, attrs, label) {
+      var node = document.createElementNS(ns, tag);
+      Object.keys(attrs).forEach(function (key) { node.setAttribute(key, attrs[key]); });
+      if (label !== undefined) node.textContent = label;
+      svg.appendChild(node);
+      return node;
+    }
+    add('line', { x1: left, y1: bottom, x2: right, y2: bottom, class: 'chart-axis' });
+    add('line', { x1: left, y1: top, x2: left, y2: bottom, class: 'chart-axis' });
+    [15, 20, 25, 30, 35].forEach(function (tick) {
+      add('line', { x1: x(tick), y1: top, x2: x(tick), y2: bottom, class: 'chart-grid' });
+      add('text', { x: x(tick), y: 382, class: 'chart-tick', 'text-anchor': 'middle' }, tick + ' h');
+    });
+    [0.3, 0.4, 0.5, 0.6].forEach(function (tick) {
+      add('line', { x1: left, y1: y(tick), x2: right, y2: y(tick), class: 'chart-grid' });
+      add('text', { x: 66, y: y(tick) + 6, class: 'chart-tick', 'text-anchor': 'end' }, tick.toFixed(1).replace('.', ','));
+    });
+    add('text', { x: right, y: 412, class: 'chart-label', 'text-anchor': 'end' }, 'Gesamtlaufzeit');
+    add('text', { x: 18, y: top, class: 'chart-label' }, 'Qualität');
+    rows.forEach(function (row) {
+      var winner = row.id === 'kdtree';
+      add('circle', { cx: x(row.hours), cy: y(row.quality), r: winner ? 13 : 8, class: winner ? 'chart-point winner' : 'chart-point' });
+      add('text', { x: x(row.hours) + 14, y: y(row.quality) - 12, class: winner ? 'chart-name winner' : 'chart-name' }, row.name);
+    });
+  }
+
   function readPosition() {
     try {
       var raw = sessionStorage.getItem(POSITION_KEY);
@@ -331,6 +448,7 @@
       Reveal.on('ready', function () { updatePipelineNavigation(pipelineNav); });
       Reveal.on('slidechanged', function () { updatePipelineNavigation(pipelineNav); });
     }
+    if (typeof Reveal !== 'undefined' && Reveal.isReady && Reveal.isReady()) updatePipelineNavigation(pipelineNav);
 
     var skip = document.getElementById('deck-skip');
     if (skip) skip.addEventListener('click', goToDemo);
@@ -363,6 +481,9 @@
   }
 
   function start() {
+    prepareSlideLayouts();
+    initChunkExplorer();
+    initResultChart();
     wire();
     if (typeof Reveal !== 'undefined' && Reveal.isReady && Reveal.isReady()) {
       restorePosition();
