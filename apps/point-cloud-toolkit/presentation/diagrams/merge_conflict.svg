@@ -12,15 +12,15 @@
   </style>
 
   <!-- left: geometry -->
-  <text class="hd" x="16" y="34">Derselbe Punkt, drei Chunks</text>
+  <text class="hd" x="16" y="34">Derselbe Punkt, drei Teilmengen</text>
 
   <circle cx="210" cy="230" r="118" fill="#2a78d6" fill-opacity="0.14" stroke="#2a78d6" stroke-width="2.5"/>
   <circle cx="330" cy="300" r="112" fill="#1baf7a" fill-opacity="0.14" stroke="#1baf7a" stroke-width="2.5"/>
   <circle cx="268" cy="146" r="104" fill="#eb6834" fill-opacity="0.14" stroke="#eb6834" stroke-width="2.5"/>
 
-  <text class="lab" fill="#2a78d6" x="96"  y="332">Chunk A</text>
-  <text class="lab" fill="#1baf7a" x="396" y="392">Chunk B</text>
-  <text class="lab" fill="#eb6834" x="300" y="62">Chunk C</text>
+  <text class="lab" fill="#2a78d6" x="96"  y="332">Teilmenge A</text>
+  <text class="lab" fill="#1baf7a" x="396" y="392">Teilmenge B</text>
+  <text class="lab" fill="#eb6834" x="300" y="62">Teilmenge C</text>
 
   <!-- chunk centres -->
   <circle cx="210" cy="230" r="6" fill="#2a78d6"/>
@@ -33,28 +33,28 @@
   <line x1="262" y1="226" x2="268" y2="146" stroke="#eb6834" stroke-width="2" stroke-dasharray="5 4"/>
   <circle cx="262" cy="226" r="11" fill="#16181c"/>
   <circle cx="262" cy="226" r="19" fill="none" stroke="#16181c" stroke-width="2.5"/>
-  <text class="sml" x="262" y="486" text-anchor="middle">gestrichelt: Abstand zum jeweiligen Chunkzentrum</text>
+  <text class="sml" x="262" y="486" text-anchor="middle">gestrichelt: Abstand zum Mittelpunkt der Teilmenge</text>
 
   <!-- middle: the three local predictions -->
   <text class="hd" x="536" y="34">Was die drei lokal sagen</text>
   <g>
     <rect class="card" x="536" y="56" width="300" height="86"/>
     <rect x="536" y="56" width="7" height="86" fill="#2a78d6" rx="3"/>
-    <text class="lab"  x="560" y="86">Chunk A → <tspan fill="#2a78d6">Gebäude</tspan></text>
+    <text class="lab"  x="560" y="86">Teilmenge A → <tspan fill="#2a78d6">Gebäude</tspan></text>
     <text class="mono" x="560" y="112">p = 0,91</text>
     <text class="mono" x="700" y="112">d = klein</text>
-    <text class="sml"  x="560" y="132">tief im Chunk, voller Kontext</text>
+    <text class="sml"  x="560" y="132">tief in der Teilmenge, voller Kontext</text>
 
     <rect class="card" x="536" y="158" width="300" height="86"/>
     <rect x="536" y="158" width="7" height="86" fill="#1baf7a" rx="3"/>
-    <text class="lab"  x="560" y="188">Chunk B → <tspan fill="#1baf7a">Vegetation</tspan></text>
+    <text class="lab"  x="560" y="188">Teilmenge B → <tspan fill="#1baf7a">Vegetation</tspan></text>
     <text class="mono" x="560" y="214">p = 0,52</text>
     <text class="mono" x="700" y="214">d = groß</text>
     <text class="sml"  x="560" y="234">am Rand, Kontext abgeschnitten</text>
 
     <rect class="card" x="536" y="260" width="300" height="86"/>
     <rect x="536" y="260" width="7" height="86" fill="#eb6834" rx="3"/>
-    <text class="lab"  x="560" y="290">Chunk C → <tspan fill="#eb6834">Gebäude</tspan></text>
+    <text class="lab"  x="560" y="290">Teilmenge C → <tspan fill="#eb6834">Gebäude</tspan></text>
     <text class="mono" x="560" y="316">p = 0,74</text>
     <text class="mono" x="700" y="316">d = mittel</text>
     <text class="sml"  x="560" y="336">teilweiser Kontext</text>
@@ -87,7 +87,7 @@
   </g>
 
   <rect x="900" y="404" width="364" height="96" fill="#eef4fd" stroke="#2a78d6" stroke-width="2" rx="12"/>
-  <text class="lab" x="922" y="434">Gemessen über alle sechs Chunker:</text>
+  <text class="lab" x="922" y="434">Gemessen über alle sechs Zerlegungsverfahren:</text>
   <text class="lab" x="922" y="462" fill="#2a78d6">Konfidenzgewichtung: 0,4096 mIoU</text>
   <text class="sml" x="922" y="486">Mehrheitsentscheid: 0,3242 · Unterschied: 0,085</text>
 </svg>
