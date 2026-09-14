@@ -497,6 +497,14 @@
 body.deck-immersive .deck-chrome { opacity: 0.16; }
 body.deck-immersive .deck-chrome:hover { opacity: 1; }
 
+/* Die Notfall-PDF enthält nur Vortragsinhalt, keine Browser-Bedienelemente. */
+@media print {
+  .deck-chrome,
+  .reveal .controls,
+  .reveal .progress,
+  .reveal .slide-number { display: none !important; }
+}
+
 /* Reveal-Steuerung an die Palette angleichen */
 .reveal .controls { color: var(--label-3); }
 .reveal .progress { color: var(--accent); height: 4px; background: var(--separator); }

@@ -5,6 +5,12 @@ Masterarbeit, TU Berlin, Fachgebiet Skalierbare Softwaresysteme.
 
 [**→ Live-Präsentation und Browser-Demo**](https://sechs130.github.io/pointcloud-chunking-thesis/)
 
+[**Live Presentation**](apps/point-cloud-toolkit/index.html) ·
+[**Interactive Demo**](apps/point-cloud-toolkit/demo.html) ·
+[**Offline Download**](downloads/point-cloud-toolkit-presentation.zip) ·
+[**Presentation PDF**](downloads/point-cloud-toolkit-presentation.pdf) ·
+[**Project Overview**](#die-forschungsfrage)
+
 ![Semantisch gelabelte DALES-Szene](apps/point-cloud-toolkit/presentation/figures/12_hero_scene.png)
 
 ## Die Forschungsfrage
