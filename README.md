@@ -58,7 +58,7 @@ Pointcept.
 
 ## Was diese Seite zeigt
 
-- **Präsentation** — 14 Hauptfolien, 19 Backup-Folien, Sprechernotizen (Taste `S`),
+- **Präsentation** — 15 Hauptfolien, 18 Backup-Folien, Sprechernotizen (Taste `S`),
   vollständig offline, ohne CDN, ohne externe Schrift.
 - **Browser-Demo** — zerlegt eine kleine Punktwolke wirklich im Browser:
   `xy`, `morton` und `bisect_xy_overlap`, stabile Punkt-IDs, Redundanzmetrik,

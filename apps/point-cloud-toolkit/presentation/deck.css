@@ -139,9 +139,10 @@
 .reveal section.title .byline { display: none; }
 .reveal section.title .preamble { display: contents; }
 .reveal .subtitle {
-  font-size: 1.02em;
+  font-size: 0.94em;
   color: var(--label-2);
-  max-width: 26em;
+  max-width: none;
+  white-space: nowrap;
   margin-bottom: 0.5em;
 }
 .reveal .meta {
@@ -151,7 +152,7 @@
   margin-bottom: 0.5em;
 }
 .reveal .hero-image img {
-  max-height: 54vh;
+  max-height: 61vh;
   width: 100%;
   object-fit: contain;
   border-radius: 10px;
