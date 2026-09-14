@@ -275,6 +275,11 @@
   line-height: 1.35;
   margin-top: 0.25em;
 }
+.reveal .scene-conclusion {
+  margin-top: 0.45em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
 .reveal .result-strip {
   margin-top: 0.8em;
   border-top: 1px solid var(--separator);
