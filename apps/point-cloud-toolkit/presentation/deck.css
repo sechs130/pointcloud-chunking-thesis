@@ -928,16 +928,13 @@ body.on-title .pipeline-nav, body.on-backup .pipeline-nav { display: none; }
 .industry-outcomes span { padding: 0.65em 0.8em; font-size: 0.6em; line-height: 1.25; border-left: 4px solid var(--accent); background: var(--bg-inset); }
 .example-disclaimer { font-size: 0.42em !important; color: var(--label-3); text-align: center; }
 
-.classification-visual { display: grid; grid-template-columns: 1fr 0.62fr 1fr; align-items: center; gap: 1.3em; margin-top: 1.15em; }
-.raw-cloud, .labeled-cloud { position: relative; height: 270px; }
-.raw-cloud b, .labeled-cloud b { position: absolute; width: 13px; height: 13px; border-radius: 50%; background: #737a83; box-shadow: 85px 30px #737a83, 170px 5px #737a83, 255px 52px #737a83, 45px 105px #737a83, 135px 140px #737a83, 225px 110px #737a83, 295px 165px #737a83; }
-.raw-cloud b:nth-child(2), .labeled-cloud b:nth-child(2) { transform: translate(25px,45px); }
-.raw-cloud b:nth-child(3), .labeled-cloud b:nth-child(3) { transform: translate(70px,88px); }
-.raw-cloud b:nth-child(4), .labeled-cloud b:nth-child(4) { transform: translate(125px,58px); }
-.raw-cloud b:nth-child(5), .labeled-cloud b:nth-child(5) { transform: translate(190px,92px); }
-.labeled-cloud b:nth-child(4n+1) { background: #0a64c9; box-shadow: 85px 30px #33a06f, 170px 5px #e07b39, 255px 52px #0a64c9, 45px 105px #33a06f, 135px 140px #e07b39, 225px 110px #0a64c9, 295px 165px #33a06f; }
-.raw-cloud span, .labeled-cloud span { position: absolute; bottom: 0; left: 0; right: 0; font-size: 0.52em; color: var(--label-2); text-align: center; }
-.classification-machine { text-align: center; padding: 1em 0.4em; border: 3px solid var(--accent); border-radius: 50%; }
+.scene-comparison { display: grid; grid-template-columns: minmax(0, 1fr) 150px minmax(0, 1fr); align-items: center; gap: 1em; height: 100%; min-height: 0; }
+.scene-comparison figure { margin: 0; min-width: 0; }
+.scene-comparison img { width: 100%; height: 440px; object-fit: contain; object-position: center; }
+.scene-comparison .scene-raw img { filter: grayscale(1) contrast(0.82) brightness(1.08); opacity: 0.78; }
+.scene-comparison figcaption { margin-top: 0.2em; text-align: center; color: var(--label-2); font-size: 0.52em; font-weight: 650; }
+.scene-comparison .scene-labeled figcaption { color: var(--accent); }
+.classification-machine { text-align: center; padding: 1em 0.4em; border: 3px solid var(--accent); border-radius: 50%; background: #fff; }
 .classification-machine strong, .classification-machine small { display: block; }
 .classification-machine strong { color: var(--accent); font-size: 1.1em; }
 .classification-machine small { font-size: 0.45em; line-height: 1.25; }
@@ -952,7 +949,7 @@ body.on-title .pipeline-nav, body.on-backup .pipeline-nav { display: none; }
 
 .pipeline-large { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.45em; margin-top: 1.2em; }
 .pipeline-large a { color: var(--label); text-decoration: none; padding: 0.8em 0.45em 1em; border-top: 7px solid var(--separator-2); min-height: 220px; }
-.pipeline-large a:nth-child(2), .pipeline-large a:nth-child(6) { border-color: var(--accent); }
+.pipeline-large a.pipeline-developed, .pipeline-large a:nth-child(6) { border-color: var(--accent); }
 .pipeline-large b { display: block; color: var(--accent); font-size: 1.6em; }
 .pipeline-large strong { display: block; font-size: 0.65em; line-height: 1.15; margin: 0.5em 0; }
 .pipeline-large span { font-size: 0.44em; line-height: 1.25; color: var(--label-2); }
@@ -1001,20 +998,25 @@ body.on-title .pipeline-nav, body.on-backup .pipeline-nav { display: none; }
 
 /* Interaktive Zerlegung: echte Browserlogik, reduzierte Bedienung. */
 .chunk-explorer { display: grid; grid-template-rows: auto 1fr; min-height: 0; height: 100%; }
-.chunk-controls { display: flex; align-items: center; gap: 1.25em; margin: 0 auto 0.5em; }
-.chunk-controls button { appearance: none; border: 0; border-bottom: 2px solid var(--separator-2); background: transparent; color: var(--label-2); padding: 0.42em 0.08em 0.35em; font: 650 0.55em/1.2 system-ui, sans-serif; cursor: pointer; transition: color 140ms ease, border-color 140ms ease, transform 100ms ease-out; }
+.chunk-controls { display: flex; align-items: center; justify-content: center; gap: 0.85em; margin: 0 auto 0.35em; width: 100%; }
+.chunk-controls button { appearance: none; border: 0; border-bottom: 2px solid var(--separator-2); background: transparent; color: var(--label-2); padding: 0.42em 0.04em 0.3em; font: 650 0.46em/1.2 system-ui, sans-serif; cursor: pointer; transition: color 140ms ease, border-color 140ms ease, transform 100ms ease-out; }
 .chunk-controls button:hover { color: var(--label); }
 .chunk-controls button.active { color: var(--accent); border-color: var(--accent); }
 .chunk-controls button.pressed { transform: scale(0.97); }
 .chunk-controls button:focus-visible { outline: 3px solid #7fb2f0; outline-offset: 5px; }
-.chunk-stage { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 1em; align-items: stretch; min-height: 0; }
-.chunk-stage canvas { width: 100%; height: 100%; max-height: 430px; background: var(--surface); }
+.chunk-controls .chunk-autoplay { margin-left: 0.8em; color: var(--accent); border-color: var(--accent); }
+.chunk-controls .chunk-autoplay:not(.active) { color: var(--label-3); border-color: var(--separator-2); }
+.chunk-stage { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 0.8em; align-items: stretch; min-height: 0; }
+.chunk-stage canvas { width: 100%; height: 100%; max-height: 440px; background: var(--surface); }
 .chunk-reading { align-self: center; border-left: 2px solid var(--hairline); padding-left: 0.85em; }
 .chunk-reading strong, .chunk-reading span { display: block; }
 .chunk-reading strong { color: var(--accent); font-size: 1.2em; line-height: 1; margin-top: 0.5em; letter-spacing: -0.025em; }
 .chunk-reading strong:first-child { margin-top: 0; }
 .chunk-reading span { color: var(--label-2); font-size: var(--slide-caption-size); margin-top: 0.18em; }
-.chunk-explanation { margin: 0.25em 0 0 !important; text-align: center; font-size: var(--slide-caption-size) !important; color: var(--label-2); }
+.chunk-reading span:first-child { color: var(--label); font-size: 0.62em; font-weight: 750; margin-bottom: 0.7em; }
+.chunk-keyfacts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2em; margin-top: 0.35em; text-align: center; color: var(--label-2); font-size: 0.48em; }
+.chunk-keyfacts span { border-top: 3px solid var(--hairline); padding-top: 0.42em; }
+.chunk-keyfacts strong { color: var(--accent); font-size: 1.3em; margin-right: 0.12em; }
 
 /* Ergebnissicht wird direkt aus evidence.js aufgebaut. */
 .result-visual { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 0.9em; align-items: center; height: 100%; min-height: 0; }

@@ -23,83 +23,74 @@
   </div>
 </div>
 <aside class="notes"><div class="ulist"><ul><li><p>Scan liefert zunächst Geometrie ohne Bauteilnamen</p></li><li><p>KI könnte Gehäuse, Leitungen oder Flansche unterscheiden</p></li><li><p>Darauf aufbauend Vergleich, Dokumentation und Wartung</p></li><li><p>Anwendungsfall mit Daten und Folgeprozess verbinden</p></li><li><p>Dafür braucht jeder Punkt eine Bedeutung</p></li></ul></div></aside></div></section>
-<section id="_die_ki_gibt_jedem_punkt_eine_bedeutung" class="step-1"><h2>Die KI gibt jedem Punkt eine Bedeutung</h2><div class="slide-content"><div class="classification-visual">
-  <div class="raw-cloud" aria-label="Unklassifizierte Punktwolke"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><span>nur Messpunkte</span></div>
-  <div class="classification-machine"><strong>KI</strong><small>betrachtet Form und Umgebung</small></div>
-  <div class="labeled-cloud" aria-label="Klassifizierte Punktwolke"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><span>Boden · Gebäude · Fahrzeug · Vegetation</span></div>
+<section id="_die_ki_gibt_jedem_punkt_eine_bedeutung" class="step-1"><h2>Die KI gibt jedem Punkt eine Bedeutung</h2><div class="slide-content"><div class="scene-comparison">
+  <figure class="scene-raw"><img src="presentation/images/global_scene_pred_kdtree.png" alt="Vollständige Punktwolke ohne Klassenfarben"><figcaption>Messpunkte ohne Klassenfarben</figcaption></figure>
+  <div class="classification-machine"><strong>KI</strong><small>erkennt Form und Umgebung</small></div>
+  <figure class="scene-labeled"><img src="presentation/images/global_scene_pred_kdtree.png" alt="Dieselbe vollständige Punktwolke mit vorhergesagten Klassenfarben"><figcaption>Klasse für jeden Punkt</figcaption></figure>
 </div>
 <p class="plain-definition"><strong>Semantische Segmentierung</strong> bedeutet hier: Die KI entscheidet für jeden Punkt, was er darstellt.</p>
-<aside class="notes"><div class="ulist"><ul><li><p>Manuelle Beschriftung von Millionen Punkten nicht praktikabel</p></li><li><p>KI nutzt Geometrie und lokale Nachbarschaft</p></li><li><p>Fachbegriff erst nach dem Alltagsbild nennen</p></li><li><p>Semantische Segmentierung bedeutet Klasse pro Punkt</p></li><li><p>Boden, Gebäude, Fahrzeuge, Vegetation und Leitungen</p></li><li><p>Große Szenen erzeugen ein Skalierungsproblem</p></li></ul></div></aside></div></section>
+<aside class="notes"><div class="ulist"><ul><li><p>Manuelle Beschriftung von Millionen Punkten nicht praktikabel</p></li><li><p>KI nutzt Geometrie und lokale Nachbarschaft</p></li><li><p>Fachbegriff erst nach dem Alltagsbild nennen</p></li><li><p>Boden, Gebäude, Fahrzeuge, Vegetation und Leitungen</p></li><li><p>Große Szenen erzeugen ein Skalierungsproblem</p></li></ul></div></aside></div></section>
 <section id="zerlegen" class="step-2"><h2>Eine ganze Szene passt nicht auf einmal in den Grafikspeicher</h2><div class="slide-content"><div class="scale-problem">
   <div class="scale-scene"><strong>≈ 12 Mio.</strong><span>Punkte in einer Szene</span></div>
   <div class="scale-block">zu groß für einen Durchlauf</div>
   <div class="scale-gpu"><strong>45.000</strong><span>Punkte je Teilbereich im Experiment</span></div>
 </div>
 <div class="scale-reason"><span>Globale Aufmerksamkeit vergleicht jeden Punkt mit jedem anderen.</span><strong>144 Billionen Punktpaare</strong></div>
-<aside class="notes"><div class="ulist"><ul><li><p>Zentrale technische Herausforderung</p></li><li><p>Ungefähr 12 Millionen Punkte in einer Szene</p></li><li><p>Modell verarbeitet begrenzte lokale Ausschnitte</p></li><li><p>Naive globale Aufmerksamkeit vergleicht jeden Punkt mit jedem Punkt</p></li><li><p>144 Billionen Paarwerte</p></li><li><p>Etwa 288 TB pro Kopf in FP16, nur für die Aufmerksamkeitsmatrix</p></li><li><p>Ohne Aktivierungen, Gradienten oder Optimierungszustände</p></li><li><p>Datenmenge strukturiert beherrschbar machen</p></li><li><p>Daraus folgt die gesamte Pipeline</p></li></ul></div></aside></div></section>
+<aside class="notes"><div class="ulist"><ul><li><p>Ungefähr 12 Millionen Punkte in einer Szene</p></li><li><p>Modell verarbeitet begrenzte lokale Ausschnitte</p></li><li><p>Naive globale Aufmerksamkeit vergleicht jeden Punkt mit jedem Punkt</p></li><li><p>144 Billionen Paarwerte</p></li><li><p>Etwa 288 TB pro Kopf in FP16, nur für die Aufmerksamkeitsmatrix</p></li><li><p>Ohne Aktivierungen, Gradienten oder Optimierungszustände</p></li><li><p>Daraus folgt die gesamte Pipeline</p></li></ul></div></aside></div></section>
 <section id="pipeline" class="step-2"><h2>Sechs Schritte machen große 3D-Daten beherrschbar</h2><div class="slide-content"><div class="pipeline-large">
   <a href="#/daten-verstehen"><b>1</b><strong>Daten erfassen</strong><span>3D-Szene verstehen</span></a>
-  <a href="#/zerlegen"><b>2</b><strong>Daten zerlegen</strong><span>passende Teilbereiche</span></a>
+  <a href="#/zerlegen" class="pipeline-developed"><b>2</b><strong>Daten zerlegen</strong><span>passende Teilbereiche</span></a>
   <a href="#/ki-anwenden"><b>3</b><strong>KI anwenden</strong><span>Klasse je Punkt</span></a>
-  <a href="#/vereinen"><b>4</b><strong>Ergebnisse vereinen</strong><span>Gesamtszene herstellen</span></a>
-  <a href="#/qualitaet"><b>5</b><strong>Qualität messen</strong><span>faire Kennzahlen</span></a>
+  <a href="#/vereinen" class="pipeline-developed"><b>4</b><strong>Ergebnisse vereinen</strong><span>Gesamtszene herstellen</span></a>
+  <a href="#/qualitaet" class="pipeline-developed"><b>5</b><strong>Qualität messen</strong><span>faire Kennzahlen</span></a>
   <a href="#/loesung-waehlen"><b>6</b><strong>Lösung wählen</strong><span>Zielkonflikte abwägen</span></a>
 </div>
 <p class="pipeline-purpose">Meine Arbeit: die vollständige Daten- und Evaluationspipeline aufbauen und ihre Stellschrauben systematisch vergleichen.</p>
-<aside class="notes"><div class="ulist"><ul><li><p>Pipeline ist zugleich Gliederung</p></li><li><p>Von oben nach unten beziehungsweise von links nach rechts</p></li><li><p>Zerlegung und Zusammenführung als Stellschrauben</p></li><li><p>KI-Modell und Datensatz bewusst konstant</p></li><li><p>Kontrollierter Vergleich statt Einzelversuch</p></li><li><p>Komplette Pipeline statt nur Modellaufruf</p></li><li><p>Zuerst die Zerlegung</p></li></ul></div></aside></div></section>
+<aside class="notes"><div class="ulist"><ul><li><p>Zerlegung und Zusammenführung als Stellschrauben</p></li><li><p>KI-Modell und Datensatz bewusst konstant</p></li><li><p>Kontrollierter Vergleich statt Einzelversuch</p></li><li><p>Komplette Pipeline statt nur Modellaufruf</p></li><li><p>Zuerst die Zerlegung</p></li></ul></div></aside></div></section>
 <section id="_die_zerlegung_entscheidet_welchen_kontext_die_ki_sieht" class="step-2"><h2>Die Zerlegung entscheidet, welchen Kontext die KI sieht</h2><div class="slide-content"><div class="chunk-explorer" data-chunk-explorer>
   <div class="chunk-controls" role="group" aria-label="Zerlegungsmethode auswählen">
     <button type="button" data-strategy="xy" class="active">Raster</button>
     <button type="button" data-strategy="morton">Z-Kurve</button>
-    <button type="button" data-strategy="bisect_xy_overlap">Teilung mit Überlappung</button>
+    <button type="button" data-strategy="kdtree">K-D-Baum</button>
+    <button type="button" data-strategy="rand_knn">Kugeln</button>
+    <button type="button" data-strategy="rand_cyl">Zylinder</button>
+    <button type="button" data-strategy="bisect_xy_overlap">Flächenteilung</button>
+    <button type="button" class="chunk-autoplay active" data-autoplay-toggle aria-pressed="true">Automatisch</button>
   </div>
   <div class="chunk-stage">
-    <canvas width="960" height="390" aria-label="Interaktive Darstellung der Punktzerlegung"></canvas>
-    <div class="chunk-reading"><strong data-chunk-count>–</strong><span>Teilbereiche</span><strong data-chunk-overlap>–</strong><span>mehrfach betrachtete Punkte</span></div>
+    <canvas width="1120" height="450" aria-label="Interaktive Darstellung aller sechs Zerlegungsmethoden"></canvas>
+    <div class="chunk-reading"><span data-chunk-name>Raster</span><strong data-chunk-count>12</strong><span>Teilbereiche</span><strong>228 / 228</strong><span>Punkte verarbeitet</span><strong data-chunk-overlap>–</strong><span>mehrfach betrachtete Punkte</span></div>
   </div>
 </div>
-<p class="chunk-explanation">Farbe zeigt die Zugehörigkeit. Ein Ring markiert Punkte, die mehrfach betrachtet werden.</p>
-<aside class="notes"><div class="ulist"><ul><li><p>Zerlegung zuerst in Alltagssprache</p></li><li><p>Drei echte Zerlegungsstrategien aus dem Browserwerkzeug anklicken</p></li><li><p>Raster teilt in feste Flächen wie ein Schachbrett</p></li><li><p>Z-Kurve ordnet räumlich und bildet danach gleich große Gruppen</p></li><li><p>Überlappung betrachtet Randpunkte aus mehreren Blickwinkeln</p></li><li><p>Sechs Verfahren implementiert, Details im Backup</p></li><li><p>Zerlegung verändert den sichtbaren Kontext</p></li><li><p>Mehrere Lösungsansätze entwickeln</p></li><li><p>Jeder Teilbereich läuft durch dasselbe Modell</p></li></ul></div></aside></div></section>
+<div class="chunk-keyfacts"><span><strong>6</strong> Methoden</span><span><strong>andere Grenzen</strong> und Reihenfolgen</span><span><strong>12–26</strong> Teilbereiche</span></div>
+<aside class="notes"><div class="ulist"><ul><li><p>Mehrere Lösungsansätze entwickeln</p></li><li><p>Die Zerlegungsmethoden teilen dieselben Punkte unterschiedlich in Bereiche</p></li><li><p>Überlappung sorgt dafür, dass Randpunkte in einem anderen Teilbereich auch innere Punkte sein können</p></li><li><p>Dadurch erhalten Randpunkte eine weitere Chance mit besserem räumlichem Kontext</p></li><li><p>Jeder Teilbereich läuft durch dasselbe Modell</p></li></ul></div></aside></div></section>
 <section id="ki-anwenden" class="step-3"><h2>Dasselbe KI-Modell analysiert jeden Teilbereich</h2><div class="slide-content"><div class="inference-flow">
   <div class="subset-stack"><i></i><i></i><i></i><span>Teilbereiche</span></div>
   <div class="model-core"><strong>Point Transformer V3</strong><span>erkennt lokale Formen und Nachbarschaften</span><small>für alle Versuche unverändert</small></div>
   <div class="prediction-stack"><i></i><i></i><i></i><span>Vorhersagen je Punkt</span></div>
 </div>
-<p class="plain-model">Der Modellname ist zweitrangig. Entscheidend ist der kontrollierte Versuchsaufbau: gleiche KI, andere Datenzerlegung.</p>
-<aside class="notes"><div class="ulist"><ul><li><p>Modell nur auf Nutzenebene erklären</p></li><li><p>Erkennt lokale geometrische Muster</p></li><li><p>Gleicher Datensatz, gleiches Training, gleiches Modell</p></li><li><p>Nur Zerlegung und spätere Vereinigung variieren</p></li><li><p>Interne Datenanreicherung durch Drehen, Skalieren und Spiegeln</p></li><li><p>Keine Architekturdetails auf Hauptfolie</p></li><li><p>Variablen isolieren und Vergleich fair halten</p></li><li><p>Überlappung erzeugt mehrere Vorhersagen</p></li></ul></div></aside></div></section>
+<aside class="notes"><div class="ulist"><ul><li><p>Erkennt lokale geometrische Muster</p></li><li><p>Gleicher Datensatz, gleiches Training, gleiche Konfiguration</p></li><li><p>Nur Zerlegung und spätere Vereinigung variieren</p></li><li><p>Interne Datenanreicherung durch Drehen, Skalieren und Spiegeln</p></li><li><p>Variablen isolieren und Vergleich fair halten</p></li><li><p>Überlappung erzeugt mehrere Vorhersagen</p></li></ul></div></aside></div></section>
 <section id="vereinen" class="step-4"><h2>Teilanalysen müssen wieder ein Gesamtbild ergeben</h2><div class="slide-content"><div class="merge-simple">
   <div class="votes"><span>Teil A: Gebäude</span><span>Teil B: Gebäude</span><span>Teil C: Boden</span></div>
-  <div class="merge-rule"><strong>gewichten</strong><small>Mehrheit, Abstand oder Sicherheit</small></div>
+  <div class="merge-rule"><strong>gewichten</strong><small>Mehrheit, Abstand oder Vertrauen</small></div>
   <div class="merge-answer"><strong>Gebäude</strong><span>eine konsistente Klasse</span></div>
 </div>
 <p class="merge-message">Mehrere lokale Sichtweisen können widersprechen. Eine klare Regel löst den Konflikt reproduzierbar.</p>
-<aside class="notes"><div class="ulist"><ul><li><p>Überlappende Bereiche liefern mehrere Stimmen für denselben Punkt</p></li><li><p>Einfaches Beispiel auf der Folie</p></li><li><p>Vier Regeln verglichen</p></li><li><p>Mehrheit</p></li><li><p>Nähe zum Mittelpunkt des Teilbereichs</p></li><li><p>Sicherheit des Modells</p></li><li><p>Kombination aus Nähe und Sicherheit</p></li><li><p>Schnittstellen und Konfliktregeln explizit machen</p></li><li><p>Jetzt fair messen</p></li></ul></div></aside></div></section>
+<aside class="notes"><div class="ulist"><ul><li><p>Überlappende Bereiche liefern mehrere Stimmen für denselben Punkt</p></li><li><p>Einfaches Beispiel auf der Folie</p></li><li><p>Vier Regeln verglichen</p></li><li><p>Mehrheit</p></li><li><p>Nähe zum Mittelpunkt des Teilbereichs</p></li><li><p>Vertrauen des Modells</p></li><li><p>Kombination aus Nähe und Vertrauen</p></li></ul></div></aside></div></section>
 <section id="qualitaet" class="step-5"><h2>Eine automatisierte Pipeline macht 24 Varianten vergleichbar</h2><div class="slide-content"><div class="experiment-loop">
   <div><strong>6</strong><span>Zerlegungen</span></div><b>×</b><div><strong>4</strong><span>Regeln zum Vereinen</span></div><b>=</b><div class="experiment-total"><strong>24</strong><span>kontrollierte Varianten</span></div>
 </div>
 <div class="kpi-axis"><span><b>Qualität</b> Wie viele Klassen erkennt die KI?</span><span><b>Laufzeit</b> Wie lange dauert der gesamte Ablauf?</span><span><b>Ressourcen</b> Wie viel Speicher und Redundanz entstehen?</span></div>
-<p class="transfer-line"><b>Transfer in die Industrie</b> Technische Ansätze anhand messbarer Kriterien bewerten.</p>
-<aside class="notes"><div class="ulist"><ul><li><p>6 Zerlegungen mal 4 Vereinigungsregeln</p></li><li><p>Automatisierte Verarbeitung und Auswertung</p></li><li><p>Gleiche Datenaufteilung und identische Modellbedingungen</p></li><li><p>Qualität nicht nur als Gesamtgenauigkeit</p></li><li><p>Laufzeit umfasst Verarbeitungskette</p></li><li><p>Ressourcen berücksichtigen Speicher und Mehrfacharbeit</p></li><li><p>Reproduzierbare Experimente und Kennzahlen</p></li><li><p>Die Daten zeigen klare Gewinner und Zielkonflikte</p></li></ul></div></aside></div></section>
+<aside class="notes"><div class="ulist"><ul><li><p>6 Zerlegungen mal 4 Vereinigungsregeln</p></li><li><p>Automatisierte Verarbeitung und Auswertung</p></li><li><p>Qualität nicht nur als Gesamtgenauigkeit</p></li><li><p>Laufzeit umfasst Verarbeitungskette</p></li><li><p>Ressourcen berücksichtigen Speicher und Mehrfacharbeit</p></li></ul></div></aside></div></section>
 <section id="loesung-waehlen" class="step-6"><h2>Der K-D-Baum liefert in diesem Versuch die beste Qualität</h2><div class="slide-content"><div class="result-visual">
   <svg viewBox="0 0 1120 420" role="img" aria-label="Qualität der Zerlegungsmethoden im Verhältnis zur Gesamtlaufzeit" data-result-chart></svg>
-  <div class="result-summary"><span><b>0,5552</b>beste Qualität</span><span><b>26 h</b>vollständiger Lauf</span><span><b>≈ 15 h</b>schnellere Z-Kurve</span></div>
+  <div class="result-summary"><span><b>0,5552</b>beste Qualität</span><span><b>26 h</b>vollständiger Lauf</span></div>
 </div>
 <aside class="notes"><div class="ulist"><ul><li><p>Bestwert im kontrollierten Vergleich</p></li><li><p>K-D-Baum plus kombinierte Gewichtung</p></li><li><p>mIoU 0,5552 als relative Vergleichsgröße</p></li><li><p>Diagramm aus den Messwerten in evidence.json</p></li><li><p>Z-Kurven-Sortierung schneller, aber deutlicher Qualitätsverlust</p></li><li><p>Keine Behauptung eines allgemeinen Benchmark-Siegs</p></li><li><p>Gute lokale Sicht wichtiger als spätere Reparatur</p></li><li><p>Entscheidung aus Messdaten ableiten</p></li><li><p>Industrielle Wahl braucht die Abwägung</p></li></ul></div></aside></div></section>
-<section id="_industrielle_lösungen_balancieren_qualität_und_rechenaufwand" class="step-6"><h2>Industrielle Lösungen balancieren Qualität und Rechenaufwand</h2><div class="slide-content"><div class="tradeoff-field">
-  <div class="tradeoff-axis y">höhere Qualität</div>
-  <div class="tradeoff-axis x">geringerer Aufwand</div>
-  <span class="option fast">schnell</span>
-  <span class="option quality">beste Qualität</span>
-  <span class="option balance">passender Betriebspunkt</span>
-</div>
-<div class="tradeoff-caption"><strong>Meine Entscheidung hängt vom Einsatz ab.</strong><span>Stapelverarbeitung erlaubt andere Laufzeiten als eine Prüfung nahe Echtzeit.</span></div>
-<aside class="notes"><div class="ulist"><ul><li><p>Qualität allein reicht für Betrieb nicht</p></li><li><p>Vollständige Versuchsläufe dauerten etwa 14 bis 35 Stunden</p></li><li><p>Mehr Überlappung bedeutet mehr Kontext und mehr Rechenarbeit</p></li><li><p>Betriebspunkt vom Anwendungsfall ableiten</p></li><li><p>Nächtlicher Stapellauf gegen schnelle Inspektionsrückmeldung</p></li><li><p>Technische Zielkonflikte mit Prozessanforderungen verbinden</p></li><li><p>Dafür braucht es eine robuste Systemstruktur</p></li></ul></div></aside></div></section>
 <section id="_aus_dem_experiment_entstand_eine_reproduzierbare_datenpipeline" class="step-6"><h2>Aus dem Experiment entstand eine reproduzierbare Datenpipeline</h2><div class="slide-content"><div class="engineering-pipeline">
   <span><b>Daten</b> versionierte Eingaben</span><i>›</i><span><b>Verarbeitung</b> automatisierte Läufe</span><i>›</i><span><b>Ergebnisse</b> gespeicherte Vorhersagen</span><i>›</i><span><b>Entscheidung</b> vergleichbare Kennzahlen</span>
 </div>
 <div class="engineering-evidence"><div><strong>wiederholbar</strong><span>Konfiguration statt Handarbeit</span></div><div><strong>rückverfolgbar</strong><span>persistente Zwischenergebnisse</span></div><div><strong>skalierbar</strong><span>Teilbereiche unabhängig verarbeiten</span></div></div>
-<p class="transfer-line"><b>Transfer in die Industrie</b> Von der Pilotidee zu einem prüfbaren, automatisierbaren Ablauf.</p>
-<p class="role-bridge">Anwendungsfall verstehen · Daten beherrschbar machen · KI integrieren · Entscheidungen belegen</p>
 <aside class="notes"><div class="ulist"><ul><li><p>Projekt nicht nur Modellvergleich</p></li><li><p>Persistente Teilmengen und Vorhersagen als klare Schnittstellen</p></li><li><p>Konfigurationen steuern reproduzierbare Läufe</p></li><li><p>Zwischenergebnisse ermöglichen Prüfung und Wiederaufnahme</p></li><li><p>Teilbereiche unabhängig und parallel verarbeitbar</p></li><li><p>Datenintegration, Verarbeitung, Monitoring und Entscheidung</p></li><li><p>Python, Automatisierung, Datenarchitektur und Engineering</p></li><li><p>Anwendungsfall, Daten, KI und messbare Entscheidung verbinden</p></li><li><p>Danach die eingesetzten Technologien</p></li></ul></div></aside></div></section>
 <section id="_technologien_nach_aufgabe" class="step-6"><h2>Technologien nach Aufgabe</h2><div class="slide-content"><div class="stack">
   <div class="stack-row"><div class="stack-stage">Daten</div><div class="stack-items"><span class="chip textmark">DALES</span><span class="chip textmark">PLY</span><span class="chip"><img src="presentation/logos/numpy.svg" alt="NumPy"><span>NumPy</span></span></div></div>
@@ -178,4 +169,5 @@
 </div>
 <script src="browser-core.js" defer></script>
 <script src="evidence.js" defer></script>
+<script src="presentation/chunker-gallery-data.js" defer></script>
 <script src="presentation/deck.js" defer></script></body></html>
