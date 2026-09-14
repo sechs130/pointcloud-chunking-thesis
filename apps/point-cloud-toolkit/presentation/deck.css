@@ -949,7 +949,10 @@ body.on-title .pipeline-nav, body.on-backup .pipeline-nav { display: none; }
 
 .pipeline-large { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.45em; margin-top: 1.2em; }
 .pipeline-large a { color: var(--label); text-decoration: none; padding: 0.8em 0.45em 1em; border-top: 7px solid var(--separator-2); min-height: 220px; }
-.pipeline-large a.pipeline-developed, .pipeline-large a:nth-child(6) { border-color: var(--accent); }
+.pipeline-large a:nth-child(2),
+.pipeline-large a:nth-child(4),
+.pipeline-large a:nth-child(5),
+.pipeline-large a:nth-child(6) { border-color: var(--accent); }
 .pipeline-large b { display: block; color: var(--accent); font-size: 1.6em; }
 .pipeline-large strong { display: block; font-size: 0.65em; line-height: 1.15; margin: 0.5em 0; }
 .pipeline-large span { font-size: 0.44em; line-height: 1.25; color: var(--label-2); }
