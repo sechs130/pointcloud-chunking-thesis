@@ -58,7 +58,7 @@ Pointcept.
 
 ## Was diese Seite zeigt
 
-- **Präsentation** — 15 Hauptfolien, 6 Backup-Folien, Sprechernotizen (Taste `S`),
+- **Präsentation** — 13 Hauptfolien, 6 Backup-Folien, Sprechernotizen (Taste `S`),
   vollständig offline, ohne CDN, ohne externe Schrift.
 - **Browser-Demo** — zerlegt eine kleine Punktwolke wirklich im Browser:
   `xy`, `morton` und `bisect_xy_overlap`, stabile Punkt-IDs, Redundanzmetrik,
@@ -93,4 +93,4 @@ Vollversion braucht, erreicht mich über mein GitHub-Profil.
 ---
 
 *Statischer Build. Erzeugt mit `node tools/dist.mjs` aus dem privaten
-Entwicklungs-Repository; 77 Dateien, 11.8 MB, keine externe Laufzeitabhängigkeit.*
+Entwicklungs-Repository; 78 Dateien, 13.4 MB, keine externe Laufzeitabhängigkeit.*

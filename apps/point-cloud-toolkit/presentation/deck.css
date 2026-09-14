@@ -722,7 +722,10 @@ body.figure-open .deck-chrome { opacity: 0.12; }
 }
 
 .reveal .demo-cta {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   align-self: flex-start;
   background: var(--accent);
   color: #ffffff;

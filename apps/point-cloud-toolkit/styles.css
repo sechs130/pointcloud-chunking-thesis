@@ -3,7 +3,7 @@
 
 :root {
   --accent: #0a7048;
-  --viewer-bg: #0d141b;
+  --viewer-bg: #edf3f0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -11,6 +11,228 @@
     --accent: #3fc48b;
     --viewer-bg: #06090d;
   }
+}
+
+:root[data-theme="dark"] {
+  --accent: #3fc48b;
+  --viewer-bg: #06090d;
+}
+
+/* --- Vereinfachte Bewerbungsdemo --------------------------------------- */
+
+.theme-switch {
+  display: inline-flex;
+  padding: 0.2rem;
+  border: 1px solid var(--separator);
+  border-radius: 999px;
+  background: var(--fill);
+}
+
+.theme-switch button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.42rem 0.7rem;
+  background: transparent;
+  color: var(--label-2);
+  font: inherit;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.theme-switch button.is-active {
+  background: var(--bg-elevated);
+  color: var(--label);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+}
+
+.page-head {
+  width: auto;
+  max-width: none;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(circle at 86% 18%, color-mix(in oklab, var(--accent) 24%, transparent), transparent 28%),
+    linear-gradient(135deg, var(--bg-elevated), color-mix(in oklab, var(--accent) 7%, var(--bg-elevated)));
+  border: 1px solid color-mix(in oklab, var(--accent) 22%, var(--separator));
+  overflow: hidden;
+}
+
+.page-head h1 {
+  max-width: 19ch;
+  font-size: clamp(2.3rem, 6vw, 5.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+}
+
+.page-head .lede {
+  max-width: 54rem;
+  margin-top: var(--sp-5);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+}
+
+.workspace > .flow-map,
+.workspace > .engine-note {
+  grid-column: 1 / -1;
+}
+
+.flow-map {
+  justify-content: center;
+  padding: var(--sp-3);
+  border: 1px solid var(--separator);
+  border-radius: 999px;
+  background: var(--material);
+  backdrop-filter: var(--material-blur);
+  position: sticky;
+  top: 0.75rem;
+  z-index: 8;
+}
+
+.flow-map a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  border: 0;
+  font-weight: 650;
+}
+
+.flow-map a b {
+  display: grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-2xs);
+}
+
+#view-workflow {
+  grid-template-columns: minmax(19rem, 26rem) minmax(0, 1fr);
+  align-items: start;
+}
+
+#view-workflow > .control-panel { grid-column: 1; }
+
+#view-workflow > .viewer-panel {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  position: relative;
+  top: auto;
+}
+
+#view-workflow > .recompose-panel,
+#view-workflow > .export-panel {
+  grid-column: 1 / -1;
+}
+
+.example-picker {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  font-weight: 640;
+}
+
+.upload-note,
+.noise-explanation,
+.empty-step {
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-body);
+}
+
+.empty-step { margin-top: var(--sp-4); }
+.chunk-navigator:not([hidden]) + .empty-step { display: none; }
+.chunk-counter {
+  min-width: 4.5rem;
+  text-align: center;
+  color: var(--label-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.noise-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-5);
+  margin-top: var(--sp-6);
+}
+
+.noise-controls label {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border: 1px solid var(--separator);
+  border-radius: var(--r-md);
+  background: var(--fill);
+  font-size: var(--fs-sm);
+  font-weight: 650;
+}
+
+.noise-controls label span {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.noise-controls output {
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.noise-controls input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.form-grid.compact {
+  grid-template-columns: minmax(16rem, 28rem);
+  margin-top: var(--sp-5);
+}
+
+.recompose-panel #recompose-result {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--separator);
+}
+
+.export-grid.minimal {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.export-grid.minimal .export-option {
+  min-height: 13rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.export-grid.minimal .button { margin-top: auto; }
+
+@media (max-width: 62rem) {
+  .app-bar-actions .badge { display: none; }
+  #view-workflow { grid-template-columns: 1fr; }
+  #view-workflow > .control-panel,
+  #view-workflow > .viewer-panel,
+  #view-workflow > .recompose-panel,
+  #view-workflow > .export-panel {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  #view-workflow > .viewer-panel { position: relative; top: auto; }
+}
+
+@media (max-width: 44rem) {
+  .theme-switch button { padding-inline: 0.55rem; }
+  .noise-controls,
+  .export-grid.minimal { grid-template-columns: 1fr; }
+  .flow-map {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    border-radius: var(--r-md);
+  }
+  .flow-map li { flex: none; }
 }
 
 /* --- Kopfleiste ----------------------------------------------------------

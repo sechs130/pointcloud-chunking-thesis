@@ -20,6 +20,7 @@ let browserResult = null;
 
 const elements = {
   sourceInput: document.querySelector("#source-file"),
+  examplePart: document.querySelector("#example-part"),
   archiveInput: document.querySelector("#archive-file"),
   sampleButton: document.querySelector("#sample-button"),
   chunkButton: document.querySelector("#chunk-button"),
@@ -71,6 +72,11 @@ const elements = {
   recomposeIdentity: document.querySelector("#recompose-identity"),
   supportNote: document.querySelector("#support-note"),
   supportBars: document.querySelector("#support-bars"),
+  errorRate: document.querySelector("#error-rate"),
+  errorAmplitude: document.querySelector("#error-amplitude"),
+  errorRateOutput: document.querySelector("#error-rate-output"),
+  errorAmplitudeOutput: document.querySelector("#error-amplitude-output"),
+  showResult: document.querySelector("#show-result"),
   analyzeRun: document.querySelector("#analyze-run"),
   analyzeStatus: document.querySelector("#analyze-status"),
   analyzeResult: document.querySelector("#analyze-result"),
@@ -92,6 +98,28 @@ let capabilities = null;
 let previewPoints = [];
 let scenePreviewPoints = [];
 let chunkPreviews = [];
+
+// Ohne gespeicherte Wahl folgt die Demo dem Betriebssystem. Hell und Dunkel
+// bleiben als bewusste Alternativen direkt erreichbar.
+function applyTheme(choice) {
+  const value = ["system", "light", "dark"].includes(choice) ? choice : "system";
+  if (value === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.dataset.theme = value;
+  for (const button of document.querySelectorAll("[data-theme-choice]")) {
+    const active = button.dataset.themeChoice === value;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  }
+  try { localStorage.setItem("pct-theme", value); } catch (_error) {}
+  if (elements.canvas) window.requestAnimationFrame(readViewerBackground);
+}
+
+let initialTheme = "system";
+try { initialTheme = localStorage.getItem("pct-theme") || "system"; } catch (_error) {}
+for (const button of document.querySelectorAll("[data-theme-choice]")) {
+  button.addEventListener("click", () => applyTheme(button.dataset.themeChoice));
+}
+applyTheme(initialTheme);
 // --- Viewer-Zustand und Gestenphysik ---------------------------------------
 // pitchRaw folgt dem Zeiger 1:1 und darf die Grenze ueberschreiten. Was
 // gezeichnet wird, ist der abgefederte Wert aus resistPitch(): jenseits der
@@ -190,9 +218,17 @@ function downloadName(response, fallback) {
 function fillStrategySelect() {
   elements.strategy.replaceChildren();
   for (const strategy of capabilities.strategies) {
+    if (engine === "browser" && strategy.serverOnly) continue;
     const option = document.createElement("option");
     option.value = strategy.id;
-    option.textContent = strategy.id.replaceAll("_", " ");
+    option.textContent = ({
+      xy: "Flächenraster",
+      morton: "Z-Kurven-Sortierung",
+      bisect_xy_overlap: "Rekursive Flächenteilung",
+      kdtree: "K-D-Baum",
+      rand_knn: "Kugelnachbarschaften",
+      rand_cyl: "Zylindernachbarschaften",
+    })[strategy.id] || strategy.id.replaceAll("_", " ");
     // Die drei nicht portierten Strategien bleiben sichtbar, aber waehlbar
     // sind sie nicht. Sie wegzulassen wuerde die Arbeit kleiner aussehen
     // lassen, als sie ist; sie anzubieten waere gelogen.
@@ -239,7 +275,7 @@ function loadBrowserCapabilities(reason) {
     limits: { points: core.MAX_POINTS },
   };
   engine = "browser";
-  elements.version.textContent = "browser mode";
+  elements.version.textContent = "läuft lokal";
   fillStrategySelect();
   applyEngineText(reason);
 }
@@ -248,25 +284,20 @@ function loadBrowserCapabilities(reason) {
 function applyEngineText(reason) {
   const browser = engine === "browser";
   elements.engineNote.textContent = browser
-    ? "Browser mode: chunking runs here in your browser (browser-core.js), a port of three of the six "
-      + "strategies that is checked against the Python library on every build. Your file never leaves "
-      + "this machine. kdtree, rand_knn and rand_cyl need a neighbour search and run in the full version only."
-      + (reason ? ` (${reason})` : "")
-    : "Full version: chunking runs on the Python backend with the canonical pointcloud-chunker library — "
-      + "all six strategies, versioned ZIP archive with a SHA-256 per chunk.";
+    ? "Die Berechnung läuft vollständig in diesem Browser. Dateien werden nicht hochgeladen."
+    : "Die vollständige Version nutzt die Python-Bibliothek auf dem lokalen Server.";
   elements.engineNote.classList.toggle("browser", browser);
 
   if (elements.chunkFormats) {
     elements.chunkFormats.textContent = browser
-      ? `ASCII PLY, XYZ, TXT and CSV, up to ${window.PointCloudCore.MAX_POINTS.toLocaleString("en-US")} points. `
-        + "Binary PLY, NPY and NPZ need the full version."
-      : "PLY, NumPy and numeric text formats, up to 16 MB and 500,000 points.";
+      ? `ASCII-PLY, XYZ, TXT oder CSV mit maximal ${window.PointCloudCore.MAX_POINTS.toLocaleString("de-DE")} Punkten. `
+        + "Die vollständige 12-Millionen-Punkte-Szene wäre für diese Browserdemo zu groß."
+      : "PLY, NumPy und numerische Textformate bis 16 MB und 500.000 Punkte.";
   }
-  elements.chunkButton.textContent = browser ? "Compute chunks" : "Build chunk archive";
+  elements.chunkButton.textContent = browser ? "Teilbereiche erzeugen" : "Archiv mit Teilbereichen erzeugen";
   elements.advancedParams.disabled = browser;
   if (browser) {
-    elements.advancedParams.value =
-      "Additional strategy parameters are evaluated by the full version only.";
+    elements.advancedParams.value = "Weitere Parameter stehen in der vollständigen Version bereit.";
   }
 
   if (elements.mergeLede) {
@@ -439,6 +470,31 @@ function generatedSample() {
   return new File([[...header, ...rows].join("\n") + "\n"], "generated-terrain.ply", { type: "application/octet-stream" });
 }
 
+function initializeExamples() {
+  if (!elements.examplePart) return;
+  const examples = window.PCT_EXAMPLE_SCENES || [];
+  elements.examplePart.replaceChildren();
+  for (const [index, example] of examples.entries()) {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${example.name} · ${Number(example.pointCount).toLocaleString("de-DE")} Punkte`;
+    elements.examplePart.append(option);
+  }
+  if (!examples.length) {
+    const option = document.createElement("option");
+    option.value = "generated";
+    option.textContent = "Generierte Beispielszene";
+    elements.examplePart.append(option);
+  }
+}
+
+function examplePartFile() {
+  const examples = window.PCT_EXAMPLE_SCENES || [];
+  const example = examples[Number(elements.examplePart?.value || 0)];
+  if (!example) return generatedSample();
+  return new File([example.ply], `${example.id}.ply`, { type: "application/octet-stream" });
+}
+
 /** Zerlegen im Browser: dieselben Metriken, aber im Speicher statt als ZIP. */
 function buildChunksInBrowser() {
   const core = window.PointCloudCore;
@@ -456,7 +512,7 @@ function buildChunksInBrowser() {
   for (const [index, entry] of chunkPreviews.entries()) {
     const option = document.createElement("option");
     option.value = String(index);
-    option.textContent = `${entry.id} (${Number(entry.point_count).toLocaleString("en-US")} points)`;
+    option.textContent = `${entry.id} · ${Number(entry.point_count).toLocaleString("de-DE")} Punkte`;
     elements.chunkSelect.append(option);
   }
   elements.chunkNavigator.hidden = chunkPreviews.length === 0;
@@ -467,8 +523,8 @@ function buildChunksInBrowser() {
   if (elements.reportButton) elements.reportButton.disabled = false;
   setStatus(
     elements.chunkStatus,
-    `${metrics.chunk_count} chunks, redundancy ${metrics.redundancy_ratio.toFixed(4)}, `
-      + `maximum coverage ${metrics.maximum_coverage}. No point lost.`,
+    `${metrics.chunk_count} Teilbereiche · Redundanz ${metrics.redundancy_ratio.toFixed(2)} · `
+      + `maximal ${metrics.maximum_coverage} lokale Sichten pro Punkt · kein Punkt verloren.`,
     "success",
   );
   afterDecompose();
@@ -670,7 +726,7 @@ function drawPointCloud() {
 }
 
 elements.sourceInput.addEventListener("change", () => selectSource(elements.sourceInput.files[0]));
-elements.sampleButton.addEventListener("click", () => selectSource(generatedSample()));
+elements.sampleButton.addEventListener("click", () => selectSource(examplePartFile()));
 elements.strategy.addEventListener("change", updateStrategyDescription);
 elements.chunkButton.addEventListener("click", buildArchive);
 elements.archiveInput.addEventListener("change", () => {
@@ -828,7 +884,12 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rea
 readViewerBackground();
 
 new ResizeObserver(resizeCanvas).observe(elements.canvas);
-loadCapabilities().catch((error) => {
+loadCapabilities().then(() => {
+  initializeExamples();
+  const example = examplePartFile();
+  if (example) return selectSource(example);
+  return undefined;
+}).catch((error) => {
   elements.version.textContent = "core unavailable";
   setStatus(elements.chunkStatus, error.message, "error");
 });
@@ -919,8 +980,8 @@ function afterDecompose() {
     if (button) button.disabled = !ready;
   }
   if (elements.exportMerged) elements.exportMerged.disabled = !ready;
-  if (elements.exportBundle) elements.exportBundle.disabled = !ready || engine === "browser";
-  if (elements.exportArchive) elements.exportArchive.disabled = engine === "browser" || !archiveBlob;
+  if (elements.exportBundle) elements.exportBundle.disabled = true;
+  if (elements.exportArchive) elements.exportArchive.disabled = !ready;
   if (elements.analyzeRun) elements.analyzeRun.disabled = false;
   if (elements.reportButton) elements.reportButton.disabled = engine !== "browser" || !browserResult;
   if (elements.validateStatus) setStatus(elements.validateStatus, "Ready to validate.");
@@ -1050,7 +1111,6 @@ function mergersFromRegistry(core) {
 
 function fillMergeSelect() {
   if (!elements.recomposeMethod) return;
-  const browser = engine === "browser";
   const core = window.PointCloudCore;
   // Im Browser-Modus liefert kein Backend den Katalog. Die neun Regeln stehen
   // aber im Register, das aus der Bibliothek erzeugt wird — also von dort, damit
@@ -1060,25 +1120,27 @@ function fillMergeSelect() {
 
   elements.recomposeMethod.replaceChildren();
   for (const merger of mergers) {
+    if (core.EVALUATED_MERGERS.indexOf(merger.id) < 0) continue;
     const option = document.createElement("option");
     option.value = merger.id;
-    option.textContent = merger.id.replaceAll("_", " ")
+    option.textContent = ({
+      majority: "Mehrheit",
+      distance: "Abstand zum Mittelpunkt",
+      confidence: "Vertrauen",
+      distance_confidence: "Abstand und Vertrauen",
+    })[merger.id] || merger.id.replaceAll("_", " ")
       + (merger.experimental ? " — experimental" : "");
     // Die fünf experimentellen Regeln laufen nur in der Vollversion. Sie bleiben
     // sichtbar: sie gehören zur Arbeit, und sie zu verstecken liesse sie kleiner
     // aussehen, als sie ist.
-    if (browser && core.EVALUATED_MERGERS.indexOf(merger.id) < 0) {
-      option.disabled = true;
-      option.textContent += " — full version only";
-    }
     elements.recomposeMethod.append(option);
   }
   elements.recomposeMethod.value = "confidence";
   updateMergeDescription();
 
   if (elements.recomposeCrfEnable) {
-    elements.recomposeCrfEnable.disabled = browser;
-    elements.recomposeCrf.classList.toggle("is-disabled", browser);
+    elements.recomposeCrfEnable.disabled = true;
+    elements.recomposeCrf.classList.add("is-disabled");
   }
 }
 
@@ -1087,9 +1149,12 @@ function updateMergeDescription() {
   const chosen = elements.recomposeMethod.value;
   const mergers = (capabilities && capabilities.mergers) || [];
   const merger = mergers.find((entry) => entry.id === chosen);
-  elements.recomposeMethodDescription.textContent = merger
-    ? [merger.description, merger.rationale].filter(Boolean).join(" ")
-    : "";
+  elements.recomposeMethodDescription.textContent = ({
+    majority: "Jede lokale Vorhersage hat genau eine Stimme.",
+    distance: "Vorhersagen nahe der Mitte eines Teilbereichs zählen stärker.",
+    confidence: "Sichere Vorhersagen zählen stärker.",
+    distance_confidence: "Räumliche Lage und Sicherheit bestimmen gemeinsam das Gewicht.",
+  })[chosen] || (merger ? [merger.description, merger.rationale].filter(Boolean).join(" ") : "");
 }
 
 async function runRecompose(compareAll) {
@@ -1103,9 +1168,7 @@ async function runRecompose(compareAll) {
     const decimals = Number(elements.recomposeDecimals.value);
     const power = Number(elements.recomposePower.value);
     const methods = compareAll
-      ? (engine === "browser"
-        ? core.EVALUATED_MERGERS.slice()
-        : (capabilities.mergers || []).map((entry) => entry.id))
+      ? core.EVALUATED_MERGERS.slice()
       : [elements.recomposeMethod.value];
 
     if (engine === "browser") {
@@ -1113,6 +1176,8 @@ async function runRecompose(compareAll) {
         methods,
         decimals,
         confidencePower: power,
+        errorProbability: Number(elements.errorRate?.value || 0),
+        errorAmplitude: Number(elements.errorAmplitude?.value || 0),
         sourceName: sourceFile ? sourceFile.name : "generated sample",
       });
     } else {
@@ -1131,10 +1196,11 @@ async function runRecompose(compareAll) {
       lastRecompose = await response.json();
     }
     renderRecompose(lastRecompose);
+    if (elements.exportBundle) elements.exportBundle.disabled = false;
     setStatus(
       elements.recomposeStatus,
-      `${formatNumber(lastRecompose.preview.point_count)} points recomposed from `
-        + `${lastRecompose.predictions.tiles} chunk predictions.`,
+      `${formatNumber(lastRecompose.preview.point_count)} Punkte aus `
+        + `${lastRecompose.predictions.tiles} lokalen Vorhersagen zusammengeführt.`,
       "success",
     );
   } catch (error) {
@@ -1149,7 +1215,9 @@ function renderRecompose(result) {
   elements.recomposeResult.hidden = false;
 
   // --- Mehrfachabdeckung. Die Zahl, die erklaert, warum es diesen Schritt gibt.
-  elements.supportNote.textContent = result.support.note;
+  elements.supportNote.textContent = result.support.multiple > 0
+    ? `${formatNumber(result.support.multiple)} von ${formatNumber(result.source.point_count)} Punkten liegen in mehreren Teilbereichen. Hier können die Vereinigungsregeln Fehler ausgleichen.`
+    : "Diese Zerlegung überlappt nicht. Jeder Punkt besitzt nur eine lokale Vorhersage.";
   clearElement(elements.supportBars);
   const maximum = Math.max(...result.support.histogram.map((row) => row.points), 1);
   for (const row of result.support.histogram) {
@@ -1170,9 +1238,14 @@ function renderRecompose(result) {
   const entries = Object.values(result.methods);
   for (const entry of entries) {
     const row = document.createElement("tr");
-    const name = node("td", "", entry.id.replaceAll("_", " "));
+    const name = node("td", "", ({
+      majority: "Mehrheit",
+      distance: "Abstand",
+      confidence: "Vertrauen",
+      distance_confidence: "Abstand und Vertrauen",
+    })[entry.id] || entry.id.replaceAll("_", " "));
     if (entry.experimental) name.append(node("span", "tag t-experimental", "experimental"));
-    if (entry.id === result.best_evaluated) name.append(node("span", "tag t-best", "best evaluated"));
+    if (entry.id === result.best_evaluated) name.append(node("span", "tag t-best", "bestes Ergebnis"));
     row.append(name);
     row.append(node("td", "", formatNumber(entry.merged_points)));
     row.append(node("td", "", entry.overall_accuracy === undefined
@@ -1185,18 +1258,13 @@ function renderRecompose(result) {
 
   const experimental = entries.filter((entry) => entry.experimental).length;
   elements.recomposeCaveat.textContent =
-    "Accuracy and IoU are measured against the known ground truth of the example generator, not "
-    + "against DALES. They show that the rules differ and why — they are not the results of the "
-    + "thesis. Those are in Research & Engineering."
-    + (experimental
-      ? ` ${experimental} experimental rules are listed; none of them contributed to the `
-        + "quantitative comparison of the thesis."
-      : "");
+    "Die Kennzahlen beziehen sich auf die hier kontrolliert erzeugten Fehler. "
+    + "So wird sichtbar, welche Vereinigungsregel Fehler in überlappenden Bereichen am besten ausgleicht."
+    + (experimental ? ` ${experimental} experimentelle Regeln bleiben außerhalb dieses Vergleichs.` : "");
 
   elements.recomposeIdentity.textContent =
-    `${formatNumber(result.identity.source_points)} source points, `
-    + `${formatNumber(result.identity.merged_points)} after merging at `
-    + `${result.identity.decimals} decimals. ${result.identity.explanation}`;
+    `Punktidentität: ${formatNumber(result.identity.source_points)} Ausgangspunkte und `
+    + `${formatNumber(result.identity.merged_points)} Punkte nach dem Zusammenführen.`;
 
   // --- Der Viewer kann jetzt nach Klasse und Support färben.
   applyRecomposeColours(result);
@@ -1214,8 +1282,6 @@ function applyRecomposeColours(result) {
   if (!preview || !preview.points.length) return;
   previewPoints = preview.points;
   scenePreviewPoints = preview.points;
-  chunkPreviews = [];
-  elements.chunkNavigator.hidden = true;
   elements.viewerEmpty.hidden = true;
   elements.viewerModes.hidden = false;
 
@@ -1455,6 +1521,18 @@ function confusionTable(matrix, classNames) {
 // --------------------------------------------------------------- 06 Export
 
 async function downloadArchive() {
+  if (engine === "browser") {
+    if (!browserResult) return;
+    const report = window.PointCloudCore.chunkReport(
+      browserCloud, browserResult, sourceFile ? sourceFile.name : undefined,
+    );
+    triggerDownload(
+      new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }),
+      "zerlegungsplan.json",
+    );
+    setStatus(elements.mergeStatus, "Zerlegungsplan heruntergeladen.", "success");
+    return;
+  }
   if (!archiveBlob) return;
   triggerDownload(archiveBlob, archiveBlob.name || "point-cloud-chunks.zip");
   setStatus(elements.mergeStatus, "Archive downloaded.", "success");
@@ -1462,14 +1540,45 @@ async function downloadArchive() {
 
 async function downloadMerged() {
   if (engine === "browser") {
-    mergeInBrowser();
+    if (!browserCloud || !browserResult) return;
+    const rows = [
+      "ply", "format ascii 1.0",
+      "comment reconstructed in the Point Cloud Toolkit browser demo",
+      `element vertex ${browserCloud.n}`,
+      "property float x", "property float y", "property float z", "end_header",
+    ];
+    for (let index = 0; index < browserCloud.n; index += 1) {
+      rows.push(`${browserCloud.x[index]} ${browserCloud.y[index]} ${browserCloud.z[index]}`);
+    }
+    triggerDownload(
+      new Blob([rows.join("\n") + "\n"], { type: "application/octet-stream" }),
+      "rekonstruierte-szene.ply",
+    );
+    setStatus(elements.mergeStatus, "Rekonstruierte Szene heruntergeladen.", "success");
     return;
   }
   await mergeArchive();
 }
 
 async function downloadBundle() {
-  if (engine === "browser" || !archiveBlob) return;
+  if (engine === "browser") {
+    if (!lastRecompose) return;
+    const rows = [["Regel", "Punkte", "Trefferquote", "Mittlere IoU", "Mittleres Vertrauen"]];
+    for (const entry of Object.values(lastRecompose.methods)) {
+      rows.push([
+        entry.id,
+        entry.merged_points,
+        entry.overall_accuracy ?? "",
+        entry.mean_iou ?? "",
+        entry.mean_confidence,
+      ]);
+    }
+    const csv = rows.map((row) => row.map((value) => JSON.stringify(value)).join(",")).join("\n") + "\n";
+    triggerDownload(new Blob([csv], { type: "text/csv;charset=utf-8" }), "vergleich-vereinigungsregeln.csv");
+    setStatus(elements.mergeStatus, "Regelvergleich heruntergeladen.", "success");
+    return;
+  }
+  if (!archiveBlob) return;
   elements.exportBundle.disabled = true;
   setStatus(elements.mergeStatus, "Building the review bundle...");
   try {
@@ -1901,7 +2010,7 @@ function renderProvenance(target) {
   if (!data) return;
   clearElement(target);
   const summary = data.summary;
-  target.append(node("h3", "", "Research provenance"));
+  target.append(node("h3", "", "Technische Herkunft"));
   target.append(node("p", "lede",
     "Every capability of this project, what it is, where it is implemented, and whether it has an "
     + "intentional place here. Generated from the registry that a test checks on every run, so the "
@@ -1947,6 +2056,7 @@ function renderWorkflowProvenance() {
 }
 
 function renderResearch() {
+  if (!document.querySelector("#view-research")) return;
   renderKnnBackends(document.querySelector("#perf-backends"));
   renderScaling(document.querySelector("#perf-scaling"));
   renderNumbaNote(document.querySelector("#perf-numba"));
@@ -1975,6 +2085,22 @@ if (elements.recomposeCompare) {
 }
 if (elements.recomposeMethod) {
   elements.recomposeMethod.addEventListener("change", updateMergeDescription);
+}
+function updateNoiseLabels() {
+  if (elements.errorRateOutput) {
+    elements.errorRateOutput.textContent = `${Math.round(Number(elements.errorRate.value) * 100)} %`;
+  }
+  if (elements.errorAmplitudeOutput) {
+    elements.errorAmplitudeOutput.textContent = `${Math.round(Number(elements.errorAmplitude.value) * 100)} %`;
+  }
+}
+if (elements.errorRate) elements.errorRate.addEventListener("input", updateNoiseLabels);
+if (elements.errorAmplitude) elements.errorAmplitude.addEventListener("input", updateNoiseLabels);
+updateNoiseLabels();
+if (elements.showResult) {
+  elements.showResult.addEventListener("click", () => {
+    document.querySelector("#preview-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 if (elements.analyzeRun) elements.analyzeRun.addEventListener("click", runAnalyze);
 if (elements.exportArchive) elements.exportArchive.addEventListener("click", downloadArchive);

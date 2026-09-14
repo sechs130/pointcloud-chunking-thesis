@@ -140,6 +140,9 @@
     var ix = names.indexOf('x');
     var iy = names.indexOf('y');
     var iz = names.indexOf('z');
+    var ilabel = names.indexOf('class');
+    if (ilabel < 0) ilabel = names.indexOf('classification');
+    if (ilabel < 0) ilabel = names.indexOf('label');
     var single = {};
     properties.forEach(function (p, index) {
       single[index] = p.type === 'float' || p.type === 'float32';
@@ -148,6 +151,7 @@
     var x = new Float64Array(count);
     var y = new Float64Array(count);
     var z = new Float64Array(count);
+    var labels = ilabel >= 0 ? new Int32Array(count) : null;
     var written = 0;
     for (; cursor < lines.length && written < count; cursor += 1) {
       var row = lines[cursor].trim();
@@ -156,12 +160,13 @@
       x[written] = single[ix] ? Math.fround(parseFloat(values[ix])) : parseFloat(values[ix]);
       y[written] = single[iy] ? Math.fround(parseFloat(values[iy])) : parseFloat(values[iy]);
       z[written] = single[iz] ? Math.fround(parseFloat(values[iz])) : parseFloat(values[iz]);
+      if (labels) labels[written] = Math.round(parseFloat(values[ilabel]));
       written += 1;
     }
     if (written !== count) {
       throw new Error('PLY header promises ' + count + ' points, read ' + written + '.');
     }
-    return { n: count, x: x, y: y, z: z, fields: names };
+    return { n: count, x: x, y: y, z: z, fields: names, labels: labels };
   }
 
   /**
@@ -853,7 +858,11 @@
     var settings = options || {};
     var classes = settings.numClasses || CLASS_NAMES.length;
     var seed = settings.seed === undefined ? DEFAULT_SEED : settings.seed;
-    var truth = settings.truth || truthLabels(cloud, classes);
+    var truth = settings.truth || cloud.labels || truthLabels(cloud, classes);
+    var customNoise = Number.isFinite(Number(settings.errorProbability))
+      && Number.isFinite(Number(settings.errorAmplitude));
+    var errorProbability = Math.max(0, Math.min(1, Number(settings.errorProbability) || 0));
+    var errorAmplitude = Math.max(0, Math.min(1, Number(settings.errorAmplitude) || 0));
     var tiles = [];
 
     for (var c = 0; c < chunkResult.chunks.length; c += 1) {
@@ -890,6 +899,24 @@
       var pred = new Int32Array(m);
 
       for (i = 0; i < m; i += 1) {
+        if (customNoise) {
+          var truthClass = truth[ids[i]];
+          var probabilityDraw = mix32([seed, c, ids[i], 101]) / 4294967296;
+          var amplitudeDraw = mix32([seed, c, ids[i], 211]) / 4294967296;
+          var alternative = (truthClass + 1
+            + (mix32([seed, c, ids[i], 307]) % Math.max(1, classes - 1))) % classes;
+          var moved = probabilityDraw < errorProbability
+            ? Math.min(0.99, errorAmplitude * amplitudeDraw)
+            : 0;
+          var customOffset = i * classes;
+          for (var customClass = 0; customClass < classes; customClass += 1) {
+            probs[customOffset + customClass] = 0;
+          }
+          probs[customOffset + truthClass] = 1 - moved;
+          probs[customOffset + alternative] = moved;
+          pred[i] = moved > 0.5 ? alternative : truthClass;
+          continue;
+        }
         var sharpness = 1.0 - BORDER_PENALTY * (distance[i] / reach);
         var offset = i * classes;
         var best = -Infinity;
@@ -1196,7 +1223,9 @@
     var seed = settings.seed === undefined ? DEFAULT_SEED : settings.seed;
     var generated = syntheticPredictions(cloud, chunkResult, {
       seed: seed,
-      numClasses: CLASS_NAMES.length
+      numClasses: CLASS_NAMES.length,
+      errorProbability: settings.errorProbability,
+      errorAmplitude: settings.errorAmplitude
     });
     if (!generated.tiles.length) throw new Error('No non-empty chunk to recompose.');
 
@@ -1281,12 +1310,12 @@
         chunk_count: chunkResult.chunks.length
       },
       predictions: {
-        kind: 'synthetic-deterministic',
+        kind: cloud.labels ? 'controlled-errors-from-reference-classes' : 'synthetic-deterministic',
         seed: seed,
         generator: 'browser-core.syntheticPredictions',
-        disclosure: 'No Point Transformer V3 runs in the browser. These probabilities are derived '
-          + 'deterministically from the geometry, not predicted by a model. The four merge rules '
-          + 'computing on them are the ported ones, compared against Python.',
+        disclosure: 'No Point Transformer V3 runs in the browser. For the supplied examples, the '
+          + 'probabilities start at the real reference class and receive controlled, deterministic '
+          + 'errors. The four merge rules computing on them are the ported ones, compared against Python.',
         class_names: CLASS_NAMES.slice(),
         tiles: generated.tiles.length
       },
@@ -1299,11 +1328,10 @@
         merged_histogram: histogram(first.support_count),
         overlapping: multiple > 0,
         note: multiple > 0
-          ? multiple.toLocaleString('en-US') + ' of ' + cloud.n.toLocaleString('en-US')
-            + ' points lie in more than one chunk. The merge rule decides something only for those.'
-          : 'This decomposition does not overlap: every point lies in exactly one chunk. There is '
-            + 'nothing to recompose, and every rule returns the same result. A comparison needs a '
-            + 'decomposition with overlap.'
+          ? multiple.toLocaleString('de-DE') + ' von ' + cloud.n.toLocaleString('de-DE')
+            + ' Punkten liegen in mehreren Teilbereichen. Hier kann die Vereinigungsregel Fehler ausgleichen.'
+          : 'Diese Zerlegung überlappt nicht. Jeder Punkt hat nur eine lokale Vorhersage; '
+            + 'deshalb liefern alle Vereinigungsregeln dasselbe Ergebnis.'
       },
       identity: {
         decimals: decimals,
@@ -1326,6 +1354,8 @@
         decimals: decimals,
         confidence_power: settings.confidencePower === undefined ? 1 : settings.confidencePower,
         distance_sigma: settings.distanceSigma === undefined ? null : settings.distanceSigma,
+        error_probability: settings.errorProbability === undefined ? null : settings.errorProbability,
+        error_amplitude: settings.errorAmplitude === undefined ? null : settings.errorAmplitude,
         crf_iters: 0
       },
       crf_available: false

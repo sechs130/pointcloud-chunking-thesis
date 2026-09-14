@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -14,469 +14,230 @@
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
       </svg>
-      Portfolio apps
+      Portfolio
     </a>
     <div class="app-bar-actions">
-      <a href="index.html" class="deck-link" id="back-to-deck">
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <rect x="1.5" y="2.5" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.6"></rect>
-          <path d="M5.5 14h5M8 11.5V14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-        </svg>
-        View the presentation
-      </a>
-      <span id="library-version" class="badge">Loading core</span>
+      <div class="theme-switch" role="group" aria-label="Farbschema">
+        <button type="button" class="is-active" data-theme-choice="system">System</button>
+        <button type="button" data-theme-choice="light">Hell</button>
+        <button type="button" data-theme-choice="dark">Dunkel</button>
+      </div>
+      <a href="index.html" class="deck-link" id="back-to-deck">Zur Präsentation</a>
+      <span id="library-version" class="badge">Lade Kern</span>
     </div>
   </header>
 
   <main class="workspace">
-    <div class="page-head">
-      <p class="eyebrow">Research toolkit</p>
-      <h1>Point Cloud Toolkit</h1>
-      <p class="lede">
-        Decompose a large point cloud, check that the decomposition holds, and recompose
-        per-chunk predictions back into one scene — with the methods I compared in my
-        master's thesis.
-      </p>
-    </div>
+    <header class="page-head">
+      <p class="eyebrow">Interaktive Browserdemo</p>
+      <h1>Große Punktwolken in handhabbare Teile zerlegen</h1>
+      <p class="lede">Ein realer Szenenausschnitt, fünf Schritte und ein direkt sichtbares Ergebnis.</p>
+    </header>
 
-    <nav class="view-nav" aria-label="Areas">
-      <button type="button" class="view-tab is-active" data-view="workflow" aria-pressed="true">
-        Workflow
-      </button>
-      <button type="button" class="view-tab" data-view="research" aria-pressed="false">
-        Research &amp; Engineering
-      </button>
-    </nav>
+    <ol class="flow-map" aria-label="Ablauf">
+      <li><a href="#inspect-heading"><b>1</b> Szene wählen</a></li>
+      <li><a href="#decompose-heading"><b>2</b> Zerlegen</a></li>
+      <li><a href="#explore-heading"><b>3</b> Teile ansehen</a></li>
+      <li><a href="#recompose-heading"><b>4</b> Zusammenführen</a></li>
+      <li><a href="#export-heading"><b>5</b> Exportieren</a></li>
+    </ol>
 
-    <!-- ============================================================== Workflow -->
+    <p id="engine-note" class="engine-note" role="status"></p>
+
     <div id="view-workflow" class="view">
-
-      <ol class="flow-map" aria-label="Workflow">
-        <li><a href="#inspect-heading">Inspect</a></li>
-        <li><a href="#decompose-heading">Decompose</a></li>
-        <li><a href="#validate-heading">Validate</a></li>
-        <li><a href="#recompose-heading">Recompose</a></li>
-        <li><a href="#analyze-heading">Analyze</a></li>
-        <li><a href="#export-heading">Export</a></li>
-      </ol>
-
-      <p id="engine-note" class="engine-note" role="status"></p>
-
-      <!-- ---------------------------------------------------------- 01 Inspect -->
       <section class="control-panel surface" aria-labelledby="inspect-heading">
         <div class="section-heading">
           <span class="step">01</span>
           <div>
-            <h2 id="inspect-heading">Inspect</h2>
-            <p id="chunk-formats">PLY, NumPy and numeric text formats, up to 16 MB and 500,000 points.</p>
+            <h2 id="inspect-heading">Szene wählen</h2>
+            <p>Eigene Datei oder ein vorbereiteter Ausschnitt der Szene aus der Präsentation.</p>
           </div>
         </div>
 
+        <label class="example-picker">
+          Mitgelieferter Szenenausschnitt
+          <select id="example-part"></select>
+        </label>
         <div class="file-actions">
-          <label class="button primary" for="source-file">Choose point cloud</label>
-          <input id="source-file" type="file" accept=".ply,.npy,.npz,.xyz,.txt,.csv" hidden>
-          <button id="sample-button" class="button secondary" type="button">Use generated sample</button>
+          <button id="sample-button" class="button primary" type="button">Beispielteil laden</button>
+          <label class="button secondary" for="source-file">Eigene Punktwolke</label>
+          <input id="source-file" type="file" accept=".ply,.xyz,.txt,.csv" hidden>
         </div>
-        <p id="source-name" class="file-name">No source selected</p>
+        <p class="upload-note">Mitgeliefert: stark ausgedünnte Ausschnitte der DALES-Testszene 5175_54395 mit Referenzklassen, aber ohne weitere Messmerkmale.</p>
+        <p id="chunk-formats" class="upload-note">Die Datei bleibt auf diesem Gerät.</p>
+        <p id="source-name" class="file-name">Noch keine Szene gewählt</p>
 
-        <dl class="metrics" aria-label="Point cloud metadata">
-          <div><dt>Points</dt><dd id="metric-points">–</dd></div>
-          <div><dt>Fields</dt><dd id="metric-fields">–</dd></div>
-          <div><dt>Extent</dt><dd id="metric-extent">–</dd></div>
+        <dl class="metrics" aria-label="Punktwolken-Metadaten">
+          <div><dt>Punkte</dt><dd id="metric-points">–</dd></div>
+          <div><dt>Felder</dt><dd id="metric-fields">–</dd></div>
+          <div><dt>Ausdehnung</dt><dd id="metric-extent">–</dd></div>
         </dl>
-
-        <details class="tech-details">
-          <summary>Research provenance</summary>
-          <div data-provenance-for="inspect"></div>
-        </details>
       </section>
 
-      <!-- -------------------------------------------------------------- Viewer -->
       <section class="viewer-panel surface" aria-labelledby="preview-heading">
         <div class="viewer-heading">
           <div>
-            <span class="eyebrow">Browser preview</span>
-            <h2 id="preview-heading">Scene</h2>
+            <span class="eyebrow">Live-Ansicht</span>
+            <h2 id="preview-heading">3D-Szene</h2>
           </div>
-          <span class="viewer-help">Drag to rotate, wheel to zoom</span>
+          <span class="viewer-help">Ziehen zum Drehen · Mausrad zum Zoomen</span>
         </div>
-        <canvas id="point-viewer" width="1000" height="720" aria-label="Interactive point cloud preview"></canvas>
-        <p id="viewer-empty" class="viewer-empty">Load a point cloud or generate the sample scene.</p>
-        <div id="chunk-navigator" class="chunk-navigator" hidden>
-          <button id="previous-chunk" class="button secondary" type="button" aria-label="Previous chunk">Previous</button>
-          <label>Chunk <select id="chunk-select"></select></label>
-          <button id="next-chunk" class="button secondary" type="button" aria-label="Next chunk">Next</button>
-          <span id="chunk-meta" class="file-name"></span>
-          <button id="scene-overview" class="button secondary" type="button">Scene overview</button>
-        </div>
+        <canvas id="point-viewer" width="1000" height="720" aria-label="Interaktive Punktwolkenansicht"></canvas>
+        <p id="viewer-empty" class="viewer-empty">Lade einen Szenenausschnitt.</p>
         <div class="viewer-modes" id="viewer-modes" hidden>
-          <span class="eyebrow">Colour by</span>
-          <button type="button" class="chip is-active" data-colour="height">Height</button>
-          <button type="button" class="chip" data-colour="label" disabled>Merged class</button>
-          <button type="button" class="chip" data-colour="support" disabled>Support count</button>
+          <span class="eyebrow">Farbe</span>
+          <button type="button" class="chip is-active" data-colour="height">Höhe</button>
+          <button type="button" class="chip" data-colour="label" disabled>Klasse</button>
+          <button type="button" class="chip" data-colour="support" disabled>Überlappung</button>
         </div>
       </section>
 
-      <!-- -------------------------------------------------------- 02 Decompose -->
       <section class="control-panel surface" aria-labelledby="decompose-heading">
         <div class="section-heading">
           <span class="step">02</span>
           <div>
-            <h2 id="decompose-heading">Decompose</h2>
-            <p>Split a scene that does not fit a model's fixed input budget into chunks.</p>
+            <h2 id="decompose-heading">Zerlegen</h2>
+            <p>Die Methode bestimmt Grenzen, Überlappung und räumlichen Kontext.</p>
           </div>
         </div>
 
         <div class="form-grid">
-          <label>
-            Strategy
-            <select id="strategy"></select>
-          </label>
-          <label>
-            Point budget
-            <input id="point-budget" type="number" min="32" max="100000" step="100" value="10000">
-          </label>
-          <label>
-            Overlap
-            <input id="overlap" type="number" min="0" max="0.4" step="0.05" value="0.1">
-          </label>
+          <label>Methode<select id="strategy"></select></label>
+          <label>Punkte je Teilbereich<input id="point-budget" type="number" min="32" max="100000" step="100" value="300"></label>
+          <label>Überlappung<input id="overlap" type="number" min="0" max="0.4" step="0.05" value="0.25"></label>
         </div>
         <p id="strategy-description" class="strategy-description"></p>
-
-        <button id="chunk-button" class="button primary full" type="button" disabled>Decompose</button>
-        <p id="chunk-status" class="status" role="status">Select a source to begin.</p>
+        <button id="chunk-button" class="button primary full" type="button" disabled>Zerlegen</button>
+        <p id="chunk-status" class="status" role="status">Zuerst eine Szene wählen.</p>
 
         <details class="advanced-options" id="decompose-details">
-          <summary>How a chunk actually gets its points</summary>
-          <p>
-            Three mechanisms decide what a chunk ends up containing, and none of them is
-            visible in the strategy name.
-          </p>
-          <dl class="mechanics">
-            <dt>Top-up policy</dt>
-            <dd>
-              When a chunk stays under budget, one of four rules fills it: a ball around the
-              centre, a box around the chunk, the bounding box of the k-d cell, or neighbouring
-              Morton ranks. This decides <em>where</em> the overlap comes from geometrically.
-            </dd>
-            <dt>Overlap mode</dt>
-            <dd>
-              Nine named modes across the families: overlap as a stride of the grid, as a larger
-              cell, as filling to the budget, as a shared split, or as a point threshold. The same
-              number means something different per family.
-            </dd>
-            <dt>Halo across scene boundaries</dt>
-            <dd>
-              In the thesis, decomposition pulls context from the <em>neighbouring files</em> of a
-              scene and estimates the required margin from a sample. This tool works on exactly
-              one uploaded file and has no neighbouring scenes, so this step is described here
-              rather than offered as a control that would have nothing to point at.
-            </dd>
-          </dl>
-          <p class="hint">
-            Individual parameters can be overridden as JSON. Accepted keys are exactly those the
-            selected strategy implements.
-          </p>
-          <textarea id="advanced-params" rows="6" spellcheck="false">{}</textarea>
-        </details>
-
-        <details class="tech-details">
-          <summary>Research provenance</summary>
-          <div data-provenance-for="decompose"></div>
+          <summary>Weitere Parameter</summary>
+          <textarea id="advanced-params" rows="4" spellcheck="false">{}</textarea>
         </details>
       </section>
 
-      <!-- --------------------------------------------------------- 03 Validate -->
-      <section class="control-panel surface" aria-labelledby="validate-heading">
+      <section class="control-panel surface chunk-explore" aria-labelledby="explore-heading">
         <div class="section-heading">
           <span class="step">03</span>
           <div>
-            <h2 id="validate-heading">Validate</h2>
-            <p>Does the decomposition hold — and does it agree with itself?</p>
+            <h2 id="explore-heading">Teilbereiche ansehen</h2>
+            <p>Jeder Teil enthält nur einen Ausschnitt. Überlappungen geben Randpunkten zusätzlichen Kontext.</p>
           </div>
         </div>
-
-        <button id="validate-run" class="button primary" type="button" disabled>Validate decomposition</button>
-        <p id="validate-status" class="status" role="status">Decompose first.</p>
-        <div id="validate-report" class="check-list" aria-live="polite"></div>
-
-        <details class="tech-details">
-          <summary>Research provenance</summary>
-          <div data-provenance-for="validate"></div>
-        </details>
+        <div id="chunk-navigator" class="chunk-navigator" hidden>
+          <button id="previous-chunk" class="button secondary" type="button">Zurück</button>
+          <label>Teilbereich <select id="chunk-select"></select></label>
+          <button id="next-chunk" class="button secondary" type="button">Weiter</button>
+          <span id="chunk-meta" class="chunk-counter"></span>
+          <button id="scene-overview" class="button secondary" type="button">Gesamtszene</button>
+        </div>
+        <p class="empty-step">Nach der Zerlegung kannst du hier jeden Teilbereich in der 3D-Ansicht durchschalten.</p>
       </section>
 
-      <!-- -------------------------------------------------------- 04 Recompose -->
-      <section class="control-panel surface" aria-labelledby="recompose-heading">
+      <section class="control-panel surface recompose-panel" aria-labelledby="recompose-heading">
         <div class="section-heading">
           <span class="step">04</span>
           <div>
-            <h2 id="recompose-heading">Recompose</h2>
-            <p>Many per-chunk predictions, one scene. The second half of the research question.</p>
+            <h2 id="recompose-heading">Fehler erzeugen und Ergebnisse zusammenführen</h2>
+            <p>Mehrere lokale Vorhersagen stimmen über die endgültige Klasse eines Punktes ab.</p>
           </div>
         </div>
 
-        <ol class="chain" aria-label="Why recomposition is needed">
-          <li><span class="chain-step">A point lies in several chunks</span></li>
-          <li><span class="chain-step">So several predictions exist for it</span></li>
-          <li><span class="chain-step">A merge rule weights them</span></li>
-          <li><span class="chain-step">One class remains</span></li>
-        </ol>
-
-        <p class="disclosure" id="recompose-disclosure">
-          <strong>The predictions here do not come from a model.</strong>
-          No Point Transformer V3 runs in this tool. Rather than fake real probabilities, a
-          named, seed-fixed generator derives them from the geometry: less certain towards the
-          chunk border, and each chunk with its own fixed confusion. The merge rules computing
-          on them are the canonical ones from the library.
+        <div class="noise-controls">
+          <label>
+            <span>Fehlerwahrscheinlichkeit <output id="error-rate-output">20 %</output></span>
+            <input id="error-rate" type="range" min="0" max="0.8" step="0.05" value="0.2">
+          </label>
+          <label>
+            <span>Fehlerstärke <output id="error-amplitude-output">80 %</output></span>
+            <input id="error-amplitude" type="range" min="0" max="1" step="0.05" value="0.8">
+          </label>
+        </div>
+        <p class="noise-explanation">
+          Jeder Punkt startet mit 100 % Wahrscheinlichkeit für seine Referenzklasse. Trifft der Zufall einen Punkt,
+          wandert ein zufälliger Anteil dieser Wahrscheinlichkeit zu einer falschen Klasse.
+          Überlappende Teilbereiche können denselben Punkt unterschiedlich beurteilen.
         </p>
 
-        <div class="form-grid">
-          <label>
-            Merge rule
-            <select id="recompose-method"></select>
-          </label>
-          <label>
-            Identity decimals
-            <input id="recompose-decimals" type="number" min="0" max="6" step="1" value="3">
-          </label>
-          <label>
-            Confidence power
-            <input id="recompose-power" type="number" min="0" max="8" step="0.5" value="1">
-          </label>
+        <div class="form-grid compact">
+          <label>Regel zum Vereinen<select id="recompose-method"></select></label>
         </div>
         <p id="recompose-method-description" class="strategy-description"></p>
-
-        <label class="checkbox" id="recompose-crf">
-          <input type="checkbox" id="recompose-crf-enable">
-          <span>
-            Smooth chunk borders with a graph CRF
-            <small>
-              Off by default, as in the thesis. Mean-field smoothing over a kNN neighbourhood; it
-              blurs seams — and real edges with them. Full version only: it needs a neighbour search.
-            </small>
-          </span>
-        </label>
+        <input id="recompose-decimals" type="hidden" value="3">
+        <input id="recompose-power" type="hidden" value="1">
 
         <div class="button-row">
-          <button id="recompose-run" class="button primary" type="button" disabled>Recompose</button>
-          <button id="recompose-compare" class="button secondary" type="button" disabled>
-            Compare all rules
-          </button>
+          <button id="recompose-run" class="button primary" type="button" disabled>Eine Regel anwenden</button>
+          <button id="recompose-compare" class="button secondary" type="button" disabled>Alle Regeln vergleichen</button>
         </div>
-        <p id="recompose-status" class="status" role="status">Decompose first.</p>
+        <p id="recompose-status" class="status" role="status">Zuerst zerlegen.</p>
 
         <div id="recompose-result" hidden>
           <div id="support-histogram" class="support-block">
-            <h3>Predictions per point</h3>
+            <h3>Wie viele lokale Stimmen hat ein Punkt?</h3>
             <p id="support-note" class="hint"></p>
             <div class="histogram" id="support-bars"></div>
           </div>
-
-          <h3>Result per rule</h3>
+          <h3>Welche Regel gleicht die erzeugten Fehler am besten aus?</h3>
           <div class="wrap">
             <table class="result-table" id="recompose-table">
-              <thead>
-                <tr>
-                  <th>Rule</th><th>Points</th><th>Accuracy</th><th>Mean IoU</th>
-                  <th>Mean confidence</th>
-                </tr>
-              </thead>
+              <thead><tr><th>Regel</th><th>Punkte</th><th>Trefferquote</th><th>Mittlere IoU</th><th>Vertrauen</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
           <p class="hint" id="recompose-caveat"></p>
-
-          <h3>Point identity</h3>
           <p id="recompose-identity" class="hint"></p>
+          <button id="show-result" class="button secondary" type="button">Ergebnis in der 3D-Ansicht zeigen</button>
         </div>
-
-        <details class="tech-details">
-          <summary>Research provenance</summary>
-          <div data-provenance-for="recompose"></div>
-        </details>
       </section>
 
-      <!-- ---------------------------------------------------------- 05 Analyze -->
-      <section class="control-panel surface" aria-labelledby="analyze-heading">
+      <section class="control-panel surface export-panel" aria-labelledby="export-heading">
         <div class="section-heading">
           <span class="step">05</span>
           <div>
-            <h2 id="analyze-heading">Analyze</h2>
-            <p>What the data says about itself — and what follows from it for the parameters.</p>
+            <h2 id="export-heading">Ergebnisse exportieren</h2>
+            <p>Drei einfache Dateien für Weiterverarbeitung und Prüfung.</p>
           </div>
         </div>
-
-        <button id="analyze-run" class="button primary" type="button" disabled>Analyze cloud</button>
-        <p id="analyze-status" class="status" role="status">Select a source first.</p>
-
-        <div id="analyze-result" hidden>
-          <h3>Density</h3>
-          <dl class="metrics" id="analyze-density"></dl>
-
-          <h3>Derived parameters</h3>
-          <p class="hint">
-            The difference between guessing a grid size and deriving one reproducibly from a
-            density statistic: from density and point budget follows the edge length that uses
-            up the budget on average.
-          </p>
-          <div id="analyze-suggest"></div>
-
-          <h3>Class distribution</h3>
-          <div id="analyze-classes"></div>
-
-          <h3>Confusion</h3>
-          <div id="analyze-confusion"></div>
-        </div>
-
-        <details class="tech-details">
-          <summary>Research provenance</summary>
-          <div data-provenance-for="analyze"></div>
-        </details>
-      </section>
-
-      <!-- ----------------------------------------------------------- 06 Export -->
-      <section class="control-panel surface" aria-labelledby="export-heading">
-        <div class="section-heading">
-          <span class="step">06</span>
-          <div>
-            <h2 id="export-heading">Export</h2>
-            <p>Hand results out — and read a foreign archive back in.</p>
-          </div>
-        </div>
-
-        <div id="export-options" class="export-grid">
+        <div id="export-options" class="export-grid minimal">
           <div class="export-option">
-            <h3>Chunk archive</h3>
-            <p>
-              A ZIP with one normalised PLY per chunk and a manifest: schema version, strategy,
-              parameters, the four metrics, and a SHA-256 per chunk.
-            </p>
-            <dl class="inline-meta">
-              <div><dt>Schema</dt><dd id="export-schema">–</dd></div>
-              <div><dt>Checksums</dt><dd id="export-hashes">–</dd></div>
-            </dl>
-            <button id="export-archive" class="button secondary" type="button" disabled>
-              Download archive
-            </button>
+            <h3>Zerlegungsplan</h3>
+            <p>Teilbereiche, Punktzuordnung und Kennzahlen als JSON.</p>
+            <button id="export-archive" class="button secondary" type="button" disabled>JSON herunterladen</button>
           </div>
-
           <div class="export-option">
-            <h3>Reconstructed cloud</h3>
-            <p>
-              The chunks rebuilt exactly through the stable <code>source_id</code> — same point
-              count, same fields, same order as the source.
-            </p>
-            <button id="export-merged" class="button secondary" type="button" disabled>
-              Download reconstruction
-            </button>
+            <h3>Rekonstruierte Szene</h3>
+            <p>Alle Punkte wieder in einer PLY-Datei.</p>
+            <button id="export-merged" class="button secondary" type="button" disabled>PLY herunterladen</button>
           </div>
-
           <div class="export-option">
-            <h3>Review bundle</h3>
-            <p>
-              Four views of the same result, one file each with a single scalar field: scene,
-              prediction, support, confidence. The shape in which a segmentation result can
-              actually be inspected in CloudCompare.
-            </p>
-            <button id="export-bundle" class="button secondary" type="button" disabled>
-              Download bundle
-            </button>
+            <h3>Regelvergleich</h3>
+            <p>Trefferquote und Qualität der Regeln als CSV.</p>
+            <button id="export-bundle" class="button secondary" type="button" disabled>CSV herunterladen</button>
           </div>
-
-          <div class="export-option" id="report-option">
-            <h3>Chunk report</h3>
-            <p>JSON with the index list per chunk — not an archive, but the record of which point went where.</p>
-            <button id="report-button" class="button secondary" type="button" disabled>
-              Download report
-            </button>
-          </div>
-        </div>
-
-        <h3>Read a foreign archive</h3>
-        <div class="merge-actions">
-          <label class="button secondary" for="archive-file" id="archive-label">Choose ZIP</label>
-          <input id="archive-file" type="file" accept=".zip,application/zip" hidden>
-          <span id="archive-name" class="file-name">No archive selected</span>
-          <button id="merge-button" class="button primary" type="button" disabled>Validate and merge</button>
         </div>
         <p id="merge-status" class="status" role="status"></p>
-
-        <details class="tech-details">
-          <summary>Research provenance</summary>
-          <div data-provenance-for="export"></div>
-        </details>
       </section>
-    </div>
 
-    <!-- =================================================== Research & Engineering -->
-    <div id="view-research" class="view" hidden>
-      <div class="research-intro">
-        <p class="eyebrow">Research &amp; Engineering</p>
-        <h2>The engineering behind the thesis</h2>
-        <p class="lede">
-          This area repeats no expensive measurement. It shows which problem came up, how it was
-          investigated, what came out, and which decision followed — using the measured data of
-          the thesis, not claims. Every block names the file in the thesis repository its numbers
-          come from.
-        </p>
+      <div hidden aria-hidden="true">
+        <button id="validate-run" type="button"></button>
+        <p id="validate-status"></p><div id="validate-report"></div>
+        <button id="analyze-run" type="button"></button>
+        <p id="analyze-status"></p><div id="analyze-result"></div>
+        <dl id="analyze-density"></dl><div id="analyze-suggest"></div>
+        <div id="analyze-classes"></div><div id="analyze-confusion"></div>
+        <input id="archive-file" type="file"><span id="archive-name"></span>
+        <button id="merge-button" type="button"></button>
+        <button id="report-button" type="button"></button>
+        <span id="export-schema"></span><span id="export-hashes"></span>
       </div>
-
-      <nav class="research-nav" aria-label="Research areas">
-        <button type="button" class="chip is-active" data-research="performance">Performance &amp; Scalability</button>
-        <button type="button" class="chip" data-research="resources">Resource Management</button>
-        <button type="button" class="chip" data-research="reproducibility">Reproducibility</button>
-        <button type="button" class="chip" data-research="pipeline">Research Pipeline</button>
-        <button type="button" class="chip" data-research="diagnostics">Diagnostics</button>
-        <button type="button" class="chip" data-research="lab">Experimental Lab</button>
-        <button type="button" class="chip" data-research="provenance">Provenance</button>
-      </nav>
-
-      <section class="surface research-panel" id="research-panel" data-panel="performance">
-        <div id="perf-backends"></div>
-        <div id="perf-scaling"></div>
-        <div id="perf-numba"></div>
-        <div id="perf-budget"></div>
-      </section>
-
-      <section class="surface research-panel" data-panel="resources" hidden>
-        <div id="resource-blocks"></div>
-      </section>
-
-      <section class="surface research-panel" id="repro-panel" data-panel="reproducibility" hidden></section>
-
-      <section class="surface research-panel" data-panel="pipeline" hidden>
-        <div id="pipeline-blocks"></div>
-      </section>
-
-      <section class="surface research-panel" data-panel="diagnostics" hidden>
-        <div id="diagnostics-blocks"></div>
-      </section>
-
-      <section class="surface research-panel" data-panel="lab" hidden>
-        <div class="lab-intro">
-          <h3>Experimental Lab</h3>
-          <p>
-            What was built and did <em>not</em> enter the evaluation of the thesis. That
-            separation is the point of this area: none of these methods contributed to the
-            quantitative comparison.
-          </p>
-          <div class="legend">
-            <span class="tag t-final">final / evaluated</span>
-            <span class="tag t-experimental">experimental</span>
-            <span class="tag t-abandoned">abandoned</span>
-          </div>
-        </div>
-        <div id="lab-catalog"></div>
-      </section>
-
-      <section class="surface research-panel" id="provenance-panel" data-panel="provenance" hidden></section>
     </div>
   </main>
 
   <script src="demo-config.js" defer></script>
   <script src="evidence.js" defer></script>
   <script src="capabilities.js" defer></script>
+  <script src="example-scenes.js" defer></script>
   <script src="browser-core.js" defer></script>
   <script src="app.js" defer></script>
 </body>
