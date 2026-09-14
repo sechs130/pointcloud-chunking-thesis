@@ -53,7 +53,10 @@
     var currentIndex = slides.indexOf(slide);
     var backupIndex = slides.findIndex(function (item) { return item.classList.contains('backup-divider'); });
     document.body.classList.toggle('on-title', currentIndex === 0);
-    document.body.classList.toggle('on-backup', Boolean(slide && (slide.classList.contains('demo-slide') || (backupIndex >= 0 && currentIndex >= backupIndex))));
+    document.body.classList.toggle('on-backup', Boolean(slide && (
+      (slide.classList.contains('demo-slide') && !slide.classList.contains('final-slide'))
+      || (backupIndex >= 0 && currentIndex >= backupIndex)
+    )));
     var step = 0;
     if (slide) {
       for (var i = 1; i <= 6; i += 1) if (slide.classList.contains('step-' + i)) step = i;
