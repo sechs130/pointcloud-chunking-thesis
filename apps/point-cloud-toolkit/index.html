@@ -2,31 +2,27 @@
 <meta name="description" content="Chunking ist Teil des Modells — Masterarbeit zur semantischen Segmentierung großer ALS-Punktwolken mit Point Transformer V3.">
 <link rel="stylesheet" href="presentation/deck.css"></head><body><div class="reveal"><div class="slides"><section class="title" data-state="title"><h1>Die Zerlegung ist Teil des Modells</h1><div class="preamble"><div class="paragraph subtitle"><p>Semantische Segmentierung großer ALS-Punktwolken mit Point Transformer V3</p></div>
 <div class="paragraph meta"><p>Silvio Leon Echsle · Masterarbeit, TU Berlin · Portfolio- und Interviewpräsentation · 15. September 2026</p></div>
-<div class="imageblock hero-image"><img src="presentation/figures/12_hero_scene.png" alt="Semantisch gelabelte DALES-Szene aus der Vogelperspektive"></div>
+<div class="hero-process" aria-label="Von einer großen Szene über lokale Sichten zurück zur Gesamtszene">
+  <div class="hero-stage scene"><strong>Eine große Szene</strong><span>rund 12 Millionen Punkte</span></div>
+  <div class="hero-arrow">›</div>
+  <div class="hero-stage local"><strong>Lokale Sichten</strong><span>geometrisch zusammenhängend</span></div>
+  <div class="hero-arrow">›</div>
+  <div class="hero-stage result"><strong>Kohärente Gesamtsicht</strong><span>nach der Rekombination</span></div>
+</div>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 0:40</strong></p></div>
 <div class="ulist"><ul><li><p>Einstieg</p><div class="ulist"><ul><li><p>Begrüßung: Guten Morgen, vielen Dank für die Einladung</p></li><li><p>Hook: rund 12 Mio. Punkte treffen auf 45.000 Punkte Modellbudget</p></li><li><p>Spannung: kohärente Sicht auf die Gesamtszene trotz Zerlegung</p></li></ul></div></li><li><p>Kontext</p><div class="ulist"><ul><li><p>Masterarbeit an der TU Berlin</p></li></ul></div></li></ul></div></aside></div><p class="byline">
   <span class="author">Silvio Leon Echsle <a href="mailto:s.echsle@web.de">s.echsle@web.de</a></span>
   </p></section>
-<section id="_warum_12_millionen_punkte_globale_aufmerksamkeit_sprengen"><h2>Warum 12 Millionen Punkte globale Aufmerksamkeit sprengen</h2><div class="slide-content"><div class="openblock scene-facts"><div class="content"><div class="paragraph stat"><p><strong>N ≈ 12.000.000</strong><br>
+<section id="_warum_12_millionen_punkte_globale_aufmerksamkeit_sprengen"><h2>Warum 12 Millionen Punkte globale Aufmerksamkeit sprengen</h2><div class="slide-content"><div class="openblock attention-facts"><div class="content"><div class="paragraph stat"><p><strong>N ≈ 12.000.000</strong><br>
 <span class="stat-label">Punkte pro DALES-Szene · etwa 500 × 500 × 230 m</span></p></div>
 <div class="paragraph stat"><p><strong>N² = 144 Billionen</strong><br>
 <span class="stat-label">Punktpaare bei globaler Aufmerksamkeit</span></p></div>
+<div class="paragraph stat"><p><strong>≈ 288 TB</strong><br>
+<span class="stat-label">je Aufmerksamkeitskopf in FP16</span></p></div>
 <div class="paragraph stat"><p><strong>≈ 2,3 PB</strong><br>
-<span class="stat-label">Aufmerksamkeitswerte für acht Köpfe in FP16</span></p></div></div></div>
-<div class="openblock two-col scene-pressure"><div class="content"><div class="exampleblock col"><div class="content"><div class="paragraph"><p><strong>Naive globale Aufmerksamkeit</strong></p></div>
-<div class="ulist"><ul><li><p><strong>288 TB</strong> je Aufmerksamkeitskopf in FP16</p></li><li><p><strong>2,3 PB</strong> bei acht Köpfen</p></li><li><p>nur die Aufmerksamkeitsmatrix, ohne Aktivierungen, Gradienten oder Optimierungszustände</p></li></ul></div>
-<div class="paragraph callout"><p>Massiv verteilte Spezialinfrastruktur könnte Teile dieser Last verteilen. Für einen
-reproduzierbaren Versuchsaufbau auf normaler Forschungs- oder Industriehardware ist eine
-globale 12-Millionen-Punkte-Sicht nicht praktikabel.</p></div>
-<div class="paragraph"><p><strong>Die Alternative ist nicht blindes Subsampling:</strong> Semantische Vorhersagen brauchen lokale
-Umgebungsgeometrie. Gleichzeitig würden gerade die seltenen Klassen zuerst ausgedünnt.</p></div></div></div>
-<div class="exampleblock col"><div class="content"><div class="imageblock"><img src="presentation/figures/01_class_imbalance.svg" alt="Klassenverteilung in den elf DALES-Testszenen"></div>
-<div class="paragraph class-warning"><p><strong>97,9 %</strong> der Punkte liegen in drei Klassen. <code>poles</code>: <strong>0,07 %</strong>. Blindes Downsampling
-trifft die seltenen Klassen zuerst.</p></div></div></div></div></div>
-<div class="paragraph callout strong scene-conclusion"><p>Deshalb: lokal kohärent zerlegen, lokal vorhersagen und anschließend eine konsistente Sicht
-auf die Gesamtszene rekonstruieren.</p></div>
+<span class="stat-label">bei acht Aufmerksamkeitsköpfen in FP16</span></p></div></div></div>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 1:00</strong></p></div>
-<div class="ulist"><ul><li><p>Größenordnung: N ≈ 12.000.000 Punkte, etwa 500 × 500 × 230 m</p></li><li><p>Problem: gesamte Szene als eine globale Transformer-Eingabe</p></li><li><p>Plausibilitätsrechnung für naive globale Attention</p><div class="ulist"><ul><li><p>N² = 144 Billionen Paarwerte</p></li><li><p>FP16: 288 TB pro Kopf</p></li><li><p>acht Köpfe: rund 2,3 PB</p></li><li><p>noch ohne weitere Aktivierungen, Gradienten und Optimizer-Zustände</p></li></ul></div></li><li><p>Einordnung: selbst für Top-Labs nur über massiv verteilte Spezialinfrastruktur denkbar</p></li><li><p>Für normalen Forschungs- und Industriebetrieb nicht praktikabel</p></li><li><p>Warum nicht einfach subsamplen?</p></li><li><p>Klassenverteilung: 97,9 % in Ground, Vegetation und Buildings</p></li><li><p>Seltene Klassen: poles 0,07 %, würden zuerst ausgedünnt</p></li><li><p>Semantik braucht lokale Umgebungsgeometrie und zusammenhängenden Kontext</p></li><li><p>Schlussfolgerung: lokal kohärent zerlegen, Gesamtszene anschließend rekonstruieren</p></li><li><p>Übergang: genau daraus ergibt sich die Pipeline</p></li><li><p>Kurz: globale Sicht zu groß, blindes Sampling zu verlustreich, daher Zerlegung</p></li></ul></div></aside></div></section>
+<div class="ulist"><ul><li><p>Größenordnung: N ≈ 12.000.000 Punkte, etwa 500 × 500 × 230 m</p></li><li><p>Naive globale Aufmerksamkeit</p></li><li><p>Problem: gesamte Szene als eine globale Transformereingabe</p></li><li><p>Plausibilitätsrechnung für naive globale Aufmerksamkeit</p><div class="ulist"><ul><li><p>N² = 144 Billionen Paarwerte</p></li><li><p>FP16: 288 TB pro Kopf</p></li><li><p>acht Köpfe: rund 2,3 PB</p></li><li><p>nur die Aufmerksamkeitsmatrix</p></li><li><p>ohne Aktivierungen, Gradienten oder Optimierungszustände</p></li></ul></div></li><li><p>Einordnung: selbst für führende Forschungslabore nur über massiv verteilte Spezialinfrastruktur denkbar</p></li><li><p>Für normalen Forschungs- und Industriebetrieb nicht praktikabel</p></li><li><p>Warum nicht einfach subsamplen?</p></li><li><p>Klassenverteilung: 97,9 % in Ground, Vegetation und Buildings</p></li><li><p>Seltene Klassen: poles 0,07 %, würden zuerst ausgedünnt</p></li><li><p>Semantik braucht lokale Umgebungsgeometrie und zusammenhängenden Kontext</p></li><li><p>Schlussfolgerung: lokal kohärent zerlegen, Gesamtszene anschließend rekonstruieren</p></li><li><p>Übergang: genau daraus ergibt sich die Pipeline</p></li><li><p>Kurz: globale Sicht zu groß, blindes Sampling zu verlustreich, daher Zerlegung</p></li></ul></div></aside></div></section>
 <section id="_forschungsfrage_und_versuchsaufbau"><h2>Forschungsfrage und Versuchsaufbau</h2><div class="slide-content"><div class="openblock research-question pipeline-question"><div class="content"><div class="paragraph"><p><em>Wie beeinflussen Zerlegungs- und Rekombinationsstrategien die Genauigkeit und
 Recheneffizienz transformerbasierter semantischer Segmentierung großräumiger urbaner
 ALS-Punktwolken?</em></p></div></div></div>
@@ -52,7 +48,7 @@ efficiency of transformer-based semantic segmentation for large-scale urban ALS 
 <div class="ulist"><ul><li><p>Datensatz und Split</p></li><li><p>Backbone und Trainingsrezept</p></li><li><p>Chunkgröße 45.000 Punkte</p></li><li><p>Overlap-Ziel 10 %</p></li></ul></div></div></div></div></div>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 0:40</strong></p></div>
 <div class="ulist"><ul><li><p>Forschungsfrage auf Deutsch</p></li><li><p>Zielgrößen: Genauigkeit plus Rechen- und Speicheraufwand</p></li><li><p>Versuchsraum: 6 Chunker × 4 Merge-Regeln = 24 Kombinationen</p></li><li><p>Konstant: Split, Backbone, Training, 45.000 Punkte, 10 % Overlap</p></li><li><p>Lücke: Chunking häufig genutzt, selten kontrolliert verglichen</p></li><li><p>Bei Nachfrage: ein Backbone isoliert den Effekt</p></li><li><p>Übergang: sechs Zerlegungen</p></li></ul></div></aside></div></section>
-<section id="_dales" data-visibility="hidden"><h2>DALES</h2><div class="slide-content"><div class="openblock two-col chart-left"><div class="content"><div class="exampleblock col"><div class="content"><div class="imageblock"><img src="presentation/figures/01_class_imbalance.svg" alt="Klassenverteilung in den 11 Testszenen"></div></div></div>
+<section id="_dales" data-visibility="hidden"><h2>DALES</h2><div class="slide-content"><div class="openblock two-col chart-left"><div class="content"><div class="exampleblock col"><div class="content"><figure class="interactive-canvas"><canvas data-figure-src="presentation/figures/01_class_imbalance.svg" aria-label="Klassenverteilung in den 11 Prüfszenen"></canvas></figure></div></div>
 <div class="exampleblock col"><div class="content"><div class="paragraph"><p><strong>Warum dieser Datensatz</strong></p></div>
 <div class="ulist"><ul><li><p>Städtisch, luftgestützt, punktweise annotiert</p></li><li><p>29 Trainings-, 11 Testszenen</p></li><li><p>Nur Geometrie + Reflektanz — <strong>kein RGB</strong></p></li><li><p>Die Restklasse <code>other</code> bleibt hier eine echte Zielklasse</p></li></ul></div>
 <div class="paragraph callout"><p>Drei Klassen halten 97,9 % aller Punkte. <code>poles</code> sind 0,07 %.</p></div></div></div></div></div>
@@ -94,19 +90,27 @@ Trainingsloop mit plus 366 und vor allem der Test-Export mit plus 101 Zeilen.</p
 <div class="paragraph"><p><strong>Wahrscheinliche Frage:</strong> „Warum PTv3 und nicht KPConv?“ → Weil die Frage lautet, wie sich
 ein moderner, kontextabhängiger Transformer gegenüber der Zerlegung verhält. Ein Modell mit
 schwächerem Kontextmodell hätte den Effekt kleiner aussehen lassen.</p></div></aside></div></section>
-<section id="_sechs_arten_dieselbe_szene_zu_zerschneiden" class="full-bleed"><div class="slide-content"><div class="imageblock wide"><img src="presentation/figures/14_chunker_gallery_2d_original.png" alt="Gesamtübersicht der sechs Zerlegungsverfahren aus dem Thesis-Repository"></div>
+<section id="_sechs_arten_dieselbe_szene_zu_zerschneiden"><h2>Sechs Arten, dieselbe Szene zu zerschneiden</h2><div class="slide-content"><div class="method-grid" aria-label="Sechs Zerlegungsverfahren">
+  <button class="method-card" type="button"><strong>Flächenraster</strong><span>regelmäßige Zellen in der Ebene</span></button>
+  <button class="method-card" type="button"><strong>Z-Kurven-Sortierung</strong><span>räumliche Ordnung entlang des Morton-Codes</span></button>
+  <button class="method-card" type="button"><strong>K-D-Baum</strong><span>rekursive Teilung am Median</span></button>
+  <button class="method-card" type="button"><strong>Rekursive Flächenteilung</strong><span>Teilung bis zum Punktbudget</span></button>
+  <button class="method-card" type="button"><strong>Kugelnachbarschaften</strong><span>lokale Umgebung um Ankerpunkte</span></button>
+  <button class="method-card" type="button"><strong>Zylindernachbarschaften</strong><span>Umgebung in der Ebene über die volle Höhe</span></button>
+</div>
+<p class="method-hint">Anklicken hebt ein Verfahren hervor. Die geometrische Regel verändert Kontext, Überlappung und Anzahl der Vorhersagen pro Punkt.</p>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 1:05</strong></p></div>
 <div class="ulist"><ul><li><p>Sechs Verfahren in einfachen Begriffen</p><div class="ulist"><ul><li><p>Flächenraster</p></li><li><p>Z-Kurven-Sortierung, Morton-Code</p></li><li><p>K-D-Baum</p></li><li><p>rekursive Flächenteilung</p></li><li><p>Kugel-Nachbarschaften</p></li><li><p>Zylinder-Nachbarschaften</p></li></ul></div></li><li><p>Farben: einzelne Chunks und ihre räumliche Abdeckung</p></li><li><p>Oben stärker geordnet, unten überlappende Nachbarschaften</p></li><li><p>Kerngedanke: Zerlegung verändert lokalen Kontext und Stimmenzahl</p></li><li><p>Übergang: Overlap</p></li></ul></div></aside></div></section>
-<section id="_überlappung_mehr_kontext_gegen_mehr_arbeit"><h2>Überlappung: mehr Kontext gegen mehr Arbeit</h2><div class="slide-content"><div class="openblock two-col chart-left"><div class="content"><div class="exampleblock col"><div class="content"><div class="imageblock"><img src="presentation/figures/05_overlap_vs_gain.svg" alt="Duplikatanteil gegen Merge-Gewinn"></div></div></div>
+<section id="_überlappung_mehr_kontext_gegen_mehr_arbeit"><h2>Überlappung: mehr Kontext gegen mehr Arbeit</h2><div class="slide-content"><div class="openblock two-col chart-left"><div class="content"><div class="exampleblock col"><div class="content"><figure class="interactive-canvas"><canvas data-figure-src="presentation/figures/05_overlap_vs_gain.svg" aria-label="Mehrfachabdeckung und Gewinn durch Rekombination"></canvas></figure></div></div>
 <div class="exampleblock col"><div class="content"><div class="paragraph"><p><strong>Gemessen, nicht angenommen</strong></p></div>
 <div class="paragraph"><p>Alle sechs Zerlegungsverfahren teilen dasselbe nominale Überlappungsziel von 10 %.
 Der <strong>tatsächliche</strong> Anteil mehrfach abgedeckter Punkte reicht von</p></div>
 <div class="paragraph callout"><p><code>morton</code> 11,4 % — <code>rand_knn</code> 91,3 %</p></div>
-<div class="paragraph"><p>Ein eigenes Prüfskript misst die echten Schnittmengen zwischen den Chunks einer Szene.
+<div class="paragraph"><p>Ein eigenes Prüfskript misst die echten Schnittmengen zwischen den Teilmengen einer Szene.
 Gleiche Vorgabe, völlig verschiedene Geometrie.</p></div></div></div></div></div>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 0:45</strong></p></div>
 <div class="ulist"><ul><li><p>Nutzen: Randpunkte erhalten Kontext aus Nachbarchunks</p></li><li><p>Preis: mehrfacher Modelldurchlauf</p></li><li><p>Nominal für alle: 10 %</p></li><li><p>Tatsächlich: Morton 11,4 %, rand_knn 91,3 %</p></li><li><p>Diagramm: echte Mehrfachabdeckung gegen Merge-Gewinn</p></li><li><p>Zusammenhang: mehr Support, mehr Entscheidungsspielraum</p></li><li><p>Übergang: welche Stimme gewinnt?</p></li><li><p>Kurz: gleiche Vorgabe, andere Redundanz</p></li></ul></div></aside></div></section>
-<section id="_rekombination_wer_gewinnt_den_streit"><h2>Rekombination: wer gewinnt den Streit?</h2><div class="slide-content"><div class="imageblock wide"><img src="presentation/diagrams/merge_conflict.svg" alt="Ein Punkt" width="drei Vorhersagen" height="vier Regeln"></div>
+<section id="_rekombination_wer_gewinnt_den_streit"><h2>Rekombination: wer gewinnt den Streit?</h2><div class="slide-content"><figure class="interactive-canvas wide"><canvas data-figure-src="presentation/diagrams/merge_conflict.svg" aria-label="Ein Punkt mit drei Vorhersagen und vier Regeln zur Rekombination"></canvas></figure>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 1:00</strong></p></div>
 <div class="ulist"><ul><li><p>Konflikt: ein Punkt, mehrere lokale Vorhersagen</p></li><li><p>Mehrheitsentscheid: Stimmen zählen</p></li><li><p>Abstandsgewichtung: Nähe zum Chunkzentrum</p></li><li><p>Konfidenzgewichtung: höchste Klassenwahrscheinlichkeit</p></li><li><p>Kombinierte Gewichtung: Abstand und Konfidenz</p></li><li><p>Annahme: mittig mehr Kontext</p></li><li><p>Einschränkung: Confidence nur Heuristik, keine kalibrierte Unsicherheit</p></li><li><p>Reale Daten: bis zu zwölf Stimmen</p></li><li><p>Übergang: Ergebnis</p></li></ul></div></aside></div></section>
 <section id="_warum_der_vergleich_gilt" data-visibility="hidden"><h2>Warum der Vergleich gilt</h2><div class="slide-content"><div class="openblock two-col"><div class="content"><div class="exampleblock col"><div class="content"><div class="paragraph"><p><strong>Festgehalten</strong></p></div>
@@ -135,8 +139,8 @@ berichteten Testergebnisse.</p></div>
 <div class="paragraph"><p><strong>Wahrscheinliche Frage:</strong> „Wie oft haben Sie wiederholt?“ → Einmal pro Zelle. Keine
 Seed-Replikate. Das ist die ehrlichste Limitation der Arbeit und steht auf meiner letzten
 Folie.</p></div></aside></div></section>
-<section id="_was_dabei_herauskommt"><h2>Was dabei herauskommt</h2><div class="slide-content"><div class="openblock two-col tight"><div class="content"><div class="exampleblock col"><div class="content"><div class="imageblock"><img src="presentation/figures/02_result_matrix.svg" alt="Szenen-mIoU für alle 24 Kombinationen"></div></div></div>
-<div class="exampleblock col"><div class="content"><div class="imageblock"><img src="presentation/figures/03_merge_effect.svg" alt="Spanne zwischen schwächster und stärkster Merge-Regel"></div></div></div></div></div>
+<section id="_was_dabei_herauskommt"><h2>Was dabei herauskommt</h2><div class="slide-content"><div class="openblock two-col tight"><div class="content"><div class="exampleblock col"><div class="content"><figure class="interactive-canvas"><canvas data-figure-src="presentation/figures/02_result_matrix.svg" aria-label="Szenen-mIoU für alle 24 Kombinationen"></canvas></figure></div></div>
+<div class="exampleblock col"><div class="content"><figure class="interactive-canvas"><canvas data-figure-src="presentation/figures/03_merge_effect.svg" aria-label="Spanne zwischen schwächster und stärkster Rekombinationsregel"></canvas></figure></div></div></div></div>
 <div class="openblock result-strip"><div class="content"><div class="paragraph stat"><p><strong>0,5552</strong><br>
 <span class="stat-label">bestes Szenen-mIoU: <code>kdtree</code> + <code>distance_confidence</code></span></p></div>
 <div class="paragraph stat"><p><strong>0,4096</strong><br>
@@ -145,15 +149,21 @@ Folie.</p></div></aside></div></section>
 <span class="stat-label">was die Merge-Regel bei <code>rand_knn</code> bewegt</span></p></div></div></div>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 1:15</strong></p></div>
 <div class="ulist"><ul><li><p>Matrix: 6 Chunker × 4 Regeln, Mittel über 11 Testszenen</p></li><li><p>Bestwert: kdtree + distance_confidence = 0,5552</p></li><li><p>kdtree: schon auf Chunk-Ebene stark, Merge-Spanne 0,003</p></li><li><p>rand_knn: Merge-Spanne 0,193</p></li><li><p>Im Mittel beste Regel: confidence = 0,4096</p></li><li><p>Kernaussage: kdtree gewinnt durch Zerlegung, Overlap-Chunker durch Merging</p></li><li><p>Bei Nachfrage: relativer Methodenvergleich, kein Benchmark-Sieg</p></li><li><p>Übergang: räumliche Fehlerstruktur</p></li></ul></div></aside></div></section>
-<section id="_wo_die_fehler_tatsächlich_sitzen" class="full-bleed"><div class="slide-content"><div class="imageblock wide"><img src="presentation/figures/13_qualitative.png" alt="Wo die Fehler tatsächlich sitzen: Ground Truth" width="Vorhersage" height="Fehlermaske und Support-Karte derselben Szene"></div>
+<section id="_wo_die_fehler_tatsächlich_sitzen"><h2>Wo die Fehler tatsächlich sitzen</h2><div class="slide-content"><div class="evidence-grid" aria-label="Vier Sichten auf dieselbe Szene">
+  <button type="button" class="evidence-card truth"><strong>Referenz</strong><span>vollständige Klassen der Gesamtszene</span></button>
+  <button type="button" class="evidence-card prediction"><strong>Vorhersage</strong><span>zusammengeführtes Ergebnis des K-D-Baums</span></button>
+  <button type="button" class="evidence-card error"><strong>Fehler</strong><span>Häufung an Objektgrenzen und dünnen Strukturen</span></button>
+  <button type="button" class="evidence-card support"><strong>Abdeckung</strong><span>zeigt, wo mehrere lokale Vorhersagen entscheiden</span></button>
+</div>
+<p class="evidence-conclusion">Die Rekombination wirkt nur an mehrfach abgedeckten Punkten. Genau dort werden lokale Kontextunterschiede sichtbar.</p>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 0:50</strong></p></div>
 <div class="ulist"><ul><li><p>Oben: Ground Truth und Rekonstruktion, 0,6160 mIoU</p></li><li><p>Unten links: Fehler an Dächern und Übergängen zum Boden</p></li><li><p>Unten rechts: Support je Punkt</p></li><li><p>Abdeckung bandförmig und räumlich strukturiert</p></li><li><p>Kerngedanke: Support zeigt, wo Merge entscheidet</p></li><li><p>Bei Nachfrage: Szene wegen klarer Struktur gewählt</p></li><li><p>Übergang: Rechenaufwand</p></li></ul></div></aside></div></section>
-<section id="_qualität_hat_einen_preis"><h2>Qualität hat einen Preis</h2><div class="slide-content"><div class="imageblock single-cost-chart"><img src="presentation/figures/04_quality_vs_cost.svg" alt="Qualität gegen Gesamtlaufzeit"></div>
-<div class="paragraph callout strong"><p>Der Modelldurchsatz bleibt mit <strong>0,275 bis 0,285 Chunks pro Sekunde</strong> praktisch konstant.
-Die Laufzeitunterschiede entstehen durch Chunkzahl, Redundanz und Trainingsdauer.</p></div>
+<section id="_qualität_hat_einen_preis"><h2>Qualität hat einen Preis</h2><div class="slide-content"><figure class="interactive-canvas"><canvas data-figure-src="presentation/figures/04_quality_vs_cost.svg" aria-label="Qualität im Verhältnis zur Gesamtlaufzeit"></canvas></figure>
+<div class="paragraph callout strong"><p>Der Modelldurchsatz bleibt mit <strong>0,275 bis 0,285 Teilmengen pro Sekunde</strong> praktisch konstant.
+Die Laufzeitunterschiede entstehen durch die Zahl der Teilmengen, Redundanz und Lerndauer.</p></div>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 1:00</strong></p></div>
-<div class="ulist"><ul><li><p>Qualität gegen Gesamtlaufzeit</p><div class="ulist"><ul><li><p>kdtree: 0,5552 bei rund 26 h</p></li><li><p>Morton: knapp 15 h, 0,2766</p></li><li><p>Nachbarschaft: rund 34 h</p></li></ul></div></li><li><p>Modelldurchsatz fast konstant: 0,275 bis 0,285 Chunks/s</p></li><li><p>Kostentreiber: Chunkzahl und Redundanz</p></li><li><p>Übergang: System hinter dem Vergleich</p></li></ul></div></aside></div></section>
-<section id="_was_nicht_funktioniert_hat" data-visibility="hidden"><h2>Was nicht funktioniert hat</h2><div class="slide-content"><div class="imageblock wide"><img src="presentation/figures/09_knn_backends.svg" alt="Acht kNN-Backends unter einem 60-GB-RAM-Limit"></div>
+<div class="ulist"><ul><li><p>Qualität gegen Gesamtlaufzeit</p><div class="ulist"><ul><li><p>kdtree: 0,5552 bei rund 26 h</p></li><li><p>Morton: knapp 15 h, 0,2766</p></li><li><p>Nachbarschaft: rund 34 h</p></li></ul></div></li><li><p>Modelldurchsatz fast konstant: 0,275 bis 0,285 Teilmengen/s</p></li><li><p>Kostentreiber: Zahl der Teilmengen und Redundanz</p></li><li><p>Übergang: System hinter dem Vergleich</p></li></ul></div></aside></div></section>
+<section id="_was_nicht_funktioniert_hat" data-visibility="hidden"><h2>Was nicht funktioniert hat</h2><div class="slide-content"><figure class="interactive-canvas wide"><canvas data-figure-src="presentation/figures/09_knn_backends.svg" aria-label="Acht Verfahren zur Suche nächster Nachbarn unter einem Arbeitsspeicherlimit von 60 Gigabyte"></canvas></figure>
 <aside class="notes"><div class="paragraph"><p><strong>Sprechzeit: 2 Minuten. Diese Folie sagt am meisten über Arbeitsweise.</strong></p></div>
 <div class="paragraph"><p>Die Nachbarschafts-Chunker brauchen eine k-nächste-Nachbarn-Suche über eine Szene mit zwölf
 Millionen Punkten. Mein erster Ansatz war der naheliegende: ein globaler k-d-Baum über die
@@ -181,7 +191,7 @@ Ergebnis der Arbeit.</p></div>
 23 Minuten schneller und mit 47 Gigabyte sparsamer. FAISS war der Kompromiss aus Speicher
 und Qualität der Nachbarschaft; für eine belastbare Aussage darüber fehlt mir aber ein
 kontrollierter Vergleich. Das gehört ehrlich zu Future Work.</p></div></aside></div></section>
-<section id="_das_system_hinter_dem_experiment"><h2>Das System hinter dem Experiment</h2><div class="slide-content"><div class="imageblock wide"><img src="presentation/diagrams/architecture.svg" alt="Drei Schichten mit persistenten Schnittstellen"></div>
+<section id="_das_system_hinter_dem_experiment"><h2>Das System hinter dem Experiment</h2><div class="slide-content"><figure class="interactive-canvas wide"><canvas data-figure-src="presentation/diagrams/architecture.svg" aria-label="Drei Schichten mit dauerhaft gespeicherten Schnittstellen"></canvas></figure>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 0:55</strong></p></div>
 <div class="ulist"><ul><li><p>Drei Schichten</p><div class="ulist"><ul><li><p>persistenter Chunk-Datensatz</p></li><li><p>festes Training über Konfiguration</p></li><li><p>Szenen-Merge aus Tile-Cache</p></li></ul></div></li><li><p>Dateien statt flüchtigem Prozesszustand</p></li><li><p>Wiederholbar, cachebar, parallelisierbar, rückverfolgbar</p></li><li><p>Bei Nachfrage: 1,88× Preprocessing, 3,63× Merge</p></li><li><p>Übergang: Technologien nach Rolle</p></li><li><p>Kurz: persistente Schnittstellen sichern Vergleichbarkeit</p></li></ul></div></aside></div></section>
 <section id="_die_eingesetzten_technologien"><h2>Die eingesetzten Technologien</h2><div class="slide-content"><div class="stack">
@@ -190,23 +200,23 @@ kontrollierter Vergleich. Das gehört ehrlich zu Future Work.</p></div></aside><
     <div class="stack-items">
       <span class="chip textmark">DALES</span>
       <span class="chip textmark">PLY</span>
-      <span class="chip"><img src="presentation/logos/numpy.svg" alt="NumPy"><span>NumPy</span></span>
+      <span class="chip textmark">NumPy</span>
     </div>
   </div>
   <div class="stack-row">
     <div class="stack-stage">Zerlegung</div>
     <div class="stack-items">
-      <span class="chip"><img src="presentation/logos/python.svg" alt="Python"><span>Python 3.10</span></span>
-      <span class="chip"><img src="presentation/logos/scipy.svg" alt="SciPy"><span>SciPy</span></span>
-      <span class="chip"><img src="presentation/logos/numba.svg" alt="Numba"><span>Numba</span></span>
+      <span class="chip textmark">Python 3.10</span>
+      <span class="chip textmark">SciPy</span>
+      <span class="chip textmark">Numba</span>
       <span class="chip textmark">FAISS</span>
     </div>
   </div>
   <div class="stack-row accent">
     <div class="stack-stage">Lernen</div>
     <div class="stack-items">
-      <span class="chip"><img src="presentation/logos/pytorch.svg" alt="PyTorch"><span>PyTorch 2.5</span></span>
-      <span class="chip"><img src="presentation/logos/nvidia.svg" alt="CUDA"><span>CUDA 12.4</span></span>
+      <span class="chip textmark">PyTorch 2.5</span>
+      <span class="chip textmark">CUDA 12.4</span>
       <span class="chip textmark">Pointcept</span>
       <span class="chip textmark">PTv3</span>
     </div>
@@ -214,36 +224,36 @@ kontrollierter Vergleich. Das gehört ehrlich zu Future Work.</p></div></aside><
   <div class="stack-row">
     <div class="stack-stage">Rekombination<br>&amp; Auswertung</div>
     <div class="stack-items">
-      <span class="chip"><img src="presentation/logos/numpy.svg" alt="NumPy"><span>NumPy</span></span>
+      <span class="chip textmark">NumPy</span>
       <span class="chip textmark">Matplotlib</span>
     </div>
   </div>
   <div class="stack-row">
     <div class="stack-stage">Steuerung</div>
     <div class="stack-items">
-      <span class="chip"><img src="presentation/logos/jupyter.svg" alt="Jupyter"><span>Jupyter</span></span>
-      <span class="chip"><img src="presentation/logos/git.svg" alt="Git"><span>Git</span></span>
-      <span class="chip"><img src="presentation/logos/gnubash.svg" alt="Bash"><span>Bash</span></span>
+      <span class="chip textmark">Jupyter</span>
+      <span class="chip textmark">Git</span>
+      <span class="chip textmark">Bash</span>
       <span class="chip textmark">PowerShell</span>
     </div>
   </div>
   <div class="stack-row accent">
     <div class="stack-stage">Produkt</div>
     <div class="stack-items">
-      <span class="chip"><img src="presentation/logos/flask.svg" alt="Flask"><span>Flask</span></span>
-      <span class="chip"><img src="presentation/logos/javascript.svg" alt="JavaScript"><span>JavaScript</span></span>
-      <span class="chip"><img src="presentation/logos/html5.svg" alt="HTML"><span>HTML</span></span>
-      <span class="chip"><img src="presentation/logos/css3.svg" alt="CSS"><span>CSS</span></span>
+      <span class="chip textmark">Flask</span>
+      <span class="chip textmark">JavaScript</span>
+      <span class="chip textmark">HTML</span>
+      <span class="chip textmark">CSS</span>
       <span class="chip textmark">REST</span>
-      <span class="chip"><img src="presentation/logos/pytest.svg" alt="pytest"><span>pytest</span></span>
+      <span class="chip textmark">pytest</span>
     </div>
   </div>
   <div class="stack-row">
     <div class="stack-stage">Kommunikation</div>
     <div class="stack-items">
-      <span class="chip"><img src="presentation/logos/latex.svg" alt="LaTeX"><span>LaTeX</span></span>
-      <span class="chip"><img src="presentation/logos/asciidoctor.svg" alt="Asciidoctor"><span>AsciiDoc</span></span>
-      <span class="chip"><img src="presentation/logos/revealdotjs.svg" alt="Reveal.js"><span>Reveal.js</span></span>
+      <span class="chip textmark">LaTeX</span>
+      <span class="chip textmark">AsciiDoc</span>
+      <span class="chip textmark">Reveal.js</span>
     </div>
   </div>
 </div>
@@ -263,10 +273,15 @@ kontrollierter Vergleich. Das gehört ehrlich zu Future Work.</p></div></aside><
 <div class="paragraph step"><p><strong>5</strong> Teilmengen ansehen</p></div>
 <div class="paragraph step"><p><strong>6</strong> Rekonstruieren</p></div></div></div>
 <div class="openblock two-col demo-preview"><div class="content"><div class="exampleblock col"><div class="content"><div class="paragraph demo-cta"><p>Vorführung starten</p></div>
-<div class="paragraph demo-hint"><p>Erwartetes Ergebnis: 2.304 Punkte → <strong>16 Chunks bei Redundanz 1,0000</strong> → wieder
+<div class="paragraph demo-hint"><p>Erwartetes Ergebnis: 2.304 Punkte → <strong>16 Teilmengen bei Redundanz 1,0000</strong> → wieder
 <strong>exakt 2.304 Punkte</strong>. Die Rekonstruktion läuft über die stabilen <code>source_id</code>, nicht über
 gerundete Koordinaten.</p></div></div></div>
-<div class="exampleblock col"><div class="content"><div class="imageblock"><img src="presentation/screenshots/demo-4.png" alt="Werkzeug nach der Zerlegung in 16 Teilmengen mit einfacher Abdeckung"></div></div></div></div></div>
+<div class="exampleblock col"><div class="content"><div class="demo-result" aria-label="Erwartetes Ergebnis der Live-Vorführung">
+  <span><strong>2.304</strong>Punkte geladen</span>
+  <span><strong>16</strong>Teilmengen erzeugt</span>
+  <span><strong>0</strong>Punkte verloren</span>
+  <span><strong>2.304</strong>Punkte rekonstruiert</span>
+</div></div></div></div></div>
 <aside class="notes"><div class="paragraph"><p><strong>Zeit: 1:15 · optional, maximal 1:30</strong></p></div>
 <div class="ulist"><ul><li><p>Nur starten, wenn mindestens 90 Sekunden verbleiben</p></li><li><p>Beispieldaten laden</p></li><li><p>Prüfen: 2.304 Punkte und Felder</p></li><li><p>Rekursive Flächenteilung mit Überlappung, Budget 400</p></li><li><p>Zerlegen</p></li><li><p>Validieren: kein Punkt verloren</p></li><li><p>Rekonstruieren: exakt 2.304 Punkte</p></li><li><p>Nur Kernpfad, keine Lab-Funktionen</p></li><li><p>Abbruch nach spätestens 90 Sekunden</p></li><li><p>Fallback: Screenshot und Ergebnis nennen</p></li><li><p>Abschluss: vielen Dank, Fragen</p></li></ul></div></aside></div></section>
 <section><section id="_backup" class="backup-divider"><h2>Backup</h2><div class="slide-content"><div class="paragraph lead"><p>Folien für Nachfragen — nicht Teil des Vortrags.</p></div><aside class="notes"><div class="paragraph"><p>Ab hier nur noch auf Nachfrage. Reihenfolge: Warum PTv3, warum DALES, Chunker im Detail,
@@ -299,14 +314,14 @@ Evaluationsmetrik; CE hält die punktweisen Wahrscheinlichkeiten scharf</p></li>
 die Entscheidung, das Chunking als persistenten Vorverarbeitungslauf zu externalisieren.</p></div></div></section><section id="_trainingskonfiguration_im_detail"><h2>Trainingskonfiguration im Detail</h2><div class="slide-content"><table class="tableblock frame-all grid-all"><colgroup><col><col></colgroup><thead><tr><th class="tableblock halign-left valign-top">Einstellung</th><th class="tableblock halign-left valign-top">Wert</th></tr><tbody><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Batch-Größe (effektiv)</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">2 (2)</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Optimierer</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">AdamW, lr 5·10<sup>-4</sup>, Block-LR-Ratio 0,1</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Scheduler</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">ReduceLROnPlateau, Faktor 0,5, Threshold 10<sup>-3</sup>, EMA α 0,2</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Holdout</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">16 % der Trainings-Chunks, Seed 42</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Early Stopping</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Patience 8, Min-Delta 10<sup>-3</sup>, max. 30 Epochen</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Mixed Precision</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">an · Gradient Clipping 20,0</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Loss</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">CE + Lovász, inverse Frequenz, <code>other</code>-Downweight 0,2</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Eingabe</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">x, y, z, Reflektanz</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Test</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">13-View Test-Time-Augmentation</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">Modellprofil</p></td><td class="tableblock halign-left valign-top"><p class="tableblock"><code>minimal/minimal</code>, Backbone-Out 32</p></td></tr></table>
 <div class="paragraph"><p>Tatsächlich trainierte Epochen bis zum Early Stop: <code>xy</code> 6 · <code>morton</code> 9 · <code>kdtree</code> 11 ·
 <code>rand_knn</code> 12 · <code>rand_cyl</code> 14 · <code>bisect_xy</code> 11 — <strong>alle sechs Läufe endeten durch
-Early Stopping</strong>, keiner lief die 30 Epochen aus.</p></div></div></section><section id="_ergebnisse_pro_klasse"><h2>Ergebnisse pro Klasse</h2><div class="slide-content"><div class="imageblock wide compact"><img src="presentation/figures/06_per_class.svg" alt="Per-Klassen-IoU des besten Setups"></div>
+Early Stopping</strong>, keiner lief die 30 Epochen aus.</p></div></div></section><section id="_ergebnisse_pro_klasse"><h2>Ergebnisse pro Klasse</h2><div class="slide-content"><figure class="interactive-canvas wide compact"><canvas data-figure-src="presentation/figures/06_per_class.svg" aria-label="Klassengenaue IoU der besten Einstellung"></canvas></figure>
 <div class="paragraph"><p>Die drei dominanten Klassen sind gelöst. <code>poles</code> erreicht 0,516 bei 0,07 % Punktanteil —
 das ist bemerkenswert. <code>trucks</code> bei 0,014 ist es nicht: Nur die beiden
-Nachbarschafts-Chunker erreichen dort überhaupt Werte über null (0,099 und 0,123).</p></div></div></section><section id="_chunk_ebene_gegen_szenen_ebene"><h2>Chunk-Ebene gegen Szenen-Ebene</h2><div class="slide-content"><div class="imageblock wide compact"><img src="presentation/figures/10_chunk_vs_scene.svg" alt="Chunk-Level-mIoU gegen bestes Szenen-mIoU"></div>
+Nachbarschafts-Chunker erreichen dort überhaupt Werte über null (0,099 und 0,123).</p></div></div></section><section id="_chunk_ebene_gegen_szenen_ebene"><h2>Chunk-Ebene gegen Szenen-Ebene</h2><div class="slide-content"><figure class="interactive-canvas wide compact"><canvas data-figure-src="presentation/figures/10_chunk_vs_scene.svg" aria-label="mIoU der Teilmengen im Vergleich zum besten mIoU der Gesamtszene"></canvas></figure>
 <div class="paragraph"><p><code>kdtree</code> verliert durch die Rekombination minimal (−0,012), weil es schon auf Chunk-Ebene
 sehr stark ist. Die Nachbarschafts-Chunker gewinnen jeweils rund 0,14 — sie liefern
 komplementäre Belege, die erst die Fusion nutzbar macht. <code>morton</code> gewinnt 0,008, weil es
-kaum Overlap erzeugt.</p></div></div></section><section id="_parallelisierung_was_gemessen_ist"><h2>Parallelisierung: was gemessen ist</h2><div class="slide-content"><div class="imageblock wide compact"><img src="presentation/figures/08_parallel_scaling.svg" alt="Speed-up von Preprocessing und Rekombination"></div>
+kaum Overlap erzeugt.</p></div></div></section><section id="_parallelisierung_was_gemessen_ist"><h2>Parallelisierung: was gemessen ist</h2><div class="slide-content"><figure class="interactive-canvas wide compact"><canvas data-figure-src="presentation/figures/08_parallel_scaling.svg" aria-label="Beschleunigung der Vorverarbeitung und Rekombination durch parallele Ausführung"></canvas></figure>
 <div class="paragraph"><p>Der Preprocessing-Speedup endet bei 1,88-fach, <strong>weil der Pilot nur zwei Szenen umfasste</strong>
 und die Szene die Arbeitseinheit ist — bei vier Workern bleibt nichts mehr zu verteilen.
 Die Rekombination mit vier unabhängigen Szenen erreicht 3,63-fach bei 91 % paralleler

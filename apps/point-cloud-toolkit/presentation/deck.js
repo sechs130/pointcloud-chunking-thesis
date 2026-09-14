@@ -208,6 +208,58 @@
   }
 
   function wire() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll('.method-card, .evidence-card'),
+      function (card) {
+        card.addEventListener('click', function () {
+          var group = card.parentElement;
+          Array.prototype.forEach.call(group.children, function (item) {
+            item.classList.toggle('selected', item === card);
+          });
+        });
+      }
+    );
+
+    Array.prototype.forEach.call(
+      document.querySelectorAll('canvas[data-figure-src]'),
+      function (canvas) {
+        var source = canvas.getAttribute('data-figure-src');
+        var picture = new Image();
+        picture.addEventListener('load', function () {
+          canvas.width = picture.naturalWidth || 1200;
+          canvas.height = picture.naturalHeight || 700;
+          var context = canvas.getContext('2d');
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(picture, 0, 0, canvas.width, canvas.height);
+          canvas.dataset.ready = 'true';
+        });
+        picture.src = source;
+
+        var figure = canvas.closest('.interactive-canvas');
+        if (!figure) return;
+        figure.setAttribute('tabindex', '0');
+        figure.setAttribute('role', 'button');
+        figure.setAttribute('aria-label', (canvas.getAttribute('aria-label') || 'Abbildung') + ' vergrößern');
+        function toggleFigure(event) {
+          if (event && event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+          if (event) event.preventDefault();
+          figure.classList.toggle('expanded');
+          document.body.classList.toggle('figure-open', figure.classList.contains('expanded'));
+        }
+        figure.addEventListener('click', toggleFigure);
+        figure.addEventListener('keydown', toggleFigure);
+      }
+    );
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') return;
+      var expanded = document.querySelector('.interactive-canvas.expanded');
+      if (!expanded) return;
+      expanded.classList.remove('expanded');
+      document.body.classList.remove('figure-open');
+      event.stopPropagation();
+    }, true);
+
     var notes = document.getElementById('deck-notes');
     if (notes) notes.addEventListener('click', openSpeaker);
 

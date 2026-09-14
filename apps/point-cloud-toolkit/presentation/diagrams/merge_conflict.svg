@@ -87,7 +87,7 @@
   </g>
 
   <rect x="900" y="404" width="364" height="96" fill="#eef4fd" stroke="#2a78d6" stroke-width="2" rx="12"/>
-  <text class="lab" x="922" y="434">Gemessen über alle sechs Zerlegungsverfahren:</text>
+  <text class="lab" x="922" y="434">Mittel über sechs Verfahren:</text>
   <text class="lab" x="922" y="462" fill="#2a78d6">Konfidenzgewichtung: 0,4096 mIoU</text>
   <text class="sml" x="922" y="486">Mehrheitsentscheid: 0,3242 · Unterschied: 0,085</text>
 </svg>

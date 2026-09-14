@@ -248,6 +248,27 @@
   grid-template-columns: 1.35fr 0.8fr 0.85fr;
   gap: 1.2em;
 }
+.reveal .hero-process {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 0.55em;
+  margin-top: 1.25em;
+}
+.reveal .hero-stage {
+  min-height: 265px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.8em;
+  border: 2px solid var(--separator);
+  border-radius: 16px;
+  background: var(--fill);
+}
+.reveal .hero-stage.local { border-color: var(--accent); background: var(--accent-soft); }
+.reveal .hero-stage strong { font-size: 1.05em; color: var(--label); }
+.reveal .hero-stage span { margin-top: 0.45em; font-size: 0.65em; color: var(--label-2); }
+.reveal .hero-arrow { color: var(--accent); font-size: 2.3em; font-weight: 300; }
 
 /* Forschungsfrage und kontrollierter Versuchsaufbau auf einer Folie. */
 .reveal .pipeline-question {
@@ -315,6 +336,134 @@
 }
 .reveal .scene-facts { margin: 0.15em 0 0.65em; }
 .reveal .scene-facts .stat strong { font-size: 1.34em; }
+.reveal .attention-facts > .content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25em 1.5em;
+  max-width: 1120px;
+  margin: 1.1em auto 0;
+}
+.reveal .attention-facts .stat {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.65em 0.85em;
+  background: var(--accent-soft);
+  border-left: 5px solid var(--accent);
+  border-radius: 0 14px 14px 0;
+}
+.reveal .attention-facts .stat strong { font-size: 2.05em; }
+.reveal .attention-facts .stat-label {
+  margin-top: 0.12em;
+  font-size: 0.66em;
+  line-height: 1.22;
+}
+.reveal .attention-facts br { display: none; }
+
+.reveal .method-grid,
+.reveal .evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7em;
+  margin-top: 0.7em;
+}
+.reveal .method-card,
+.reveal .evidence-card {
+  min-height: 170px;
+  padding: 0.85em;
+  text-align: left;
+  color: var(--label);
+  background: var(--fill);
+  border: 2px solid var(--separator);
+  border-radius: 14px;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+.reveal .method-card:hover,
+.reveal .method-card.selected,
+.reveal .evidence-card:hover,
+.reveal .evidence-card.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: translateY(-3px);
+}
+.reveal .method-card strong,
+.reveal .evidence-card strong { display: block; font-size: 0.78em; }
+.reveal .method-card span,
+.reveal .evidence-card span { display: block; margin-top: 0.45em; font-size: 0.58em; line-height: 1.35; color: var(--label-2); }
+.reveal .method-hint,
+.reveal .evidence-conclusion { margin-top: 0.7em; font-size: 0.66em; color: var(--label-2); }
+.reveal .evidence-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.reveal .evidence-card { min-height: 285px; border-top-width: 8px; }
+.reveal .evidence-card.truth { border-top-color: #2a78d6; }
+.reveal .evidence-card.prediction { border-top-color: #18a874; }
+.reveal .evidence-card.error { border-top-color: #eb5b4b; }
+.reveal .evidence-card.support { border-top-color: #7f65d9; }
+
+.reveal .demo-result {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7em;
+}
+.reveal .demo-result span {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.65em;
+  border-left: 4px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 12px 12px 0;
+  font-size: 0.56em;
+  color: var(--label-2);
+}
+.reveal .demo-result strong { font-size: 1.8em; color: var(--accent); }
+
+/* Messabbildungen werden auf eine Leinwand gezeichnet und lassen sich durch
+   Anklicken vergrößern. Das bewahrt die belegten Ausgangsdaten, ohne statische
+   Bildblöcke in die Folienstruktur einzubauen. */
+.reveal .interactive-canvas {
+  margin: 0.25em auto;
+  cursor: zoom-in;
+  outline: none;
+}
+.reveal .interactive-canvas canvas {
+  display: block;
+  width: 100%;
+  max-height: 68vh;
+  object-fit: contain;
+  border-radius: 10px;
+}
+.reveal .interactive-canvas.compact canvas { max-height: 48vh; }
+.reveal .interactive-canvas:focus-visible {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 10px;
+}
+.reveal .interactive-canvas.expanded {
+  position: fixed;
+  inset: 2vh 2vw;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2em;
+  margin: 0;
+  background: rgb(255 255 255 / 97%);
+  border: 1px solid var(--separator);
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 24%);
+  cursor: zoom-out;
+}
+.reveal .interactive-canvas.expanded canvas {
+  width: auto;
+  height: auto;
+  max-width: 96vw;
+  max-height: 92vh;
+}
+body.figure-open .reveal .controls,
+body.figure-open .deck-chrome { opacity: 0.12; }
 .reveal .scene-pressure > .content {
   grid-template-columns: 0.92fr 1.35fr;
   gap: 1.25em;
