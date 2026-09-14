@@ -65,11 +65,14 @@
 
   function prepareSlideLayouts() {
     var slides = Array.prototype.slice.call(document.querySelectorAll('.reveal .slides > section'));
-    var backupIndex = slides.findIndex(function (slide) { return slide.classList.contains('backup-divider'); });
     slides.forEach(function (slide, index) {
-      if (index === 0 || (backupIndex >= 0 && index >= backupIndex)) return;
+      if (index === 0) return;
       var heading = slide.querySelector(':scope > h2');
-      if (!heading || slide.querySelector(':scope > .slide-content')) return;
+      if (!heading) return;
+      if (slide.querySelector(':scope > .slide-content')) {
+        slide.classList.add('main-layout');
+        return;
+      }
       var content = document.createElement('div');
       content.className = 'slide-content';
       Array.prototype.slice.call(slide.childNodes).forEach(function (node) {

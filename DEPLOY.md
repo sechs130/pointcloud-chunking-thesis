@@ -57,7 +57,7 @@ unverändert aus.
 
 | | |
 |---|---|
-| Seitengrösse | max. 1 GB — hier 3.4 MB |
+| Seitengrösse | max. 1 GB — hier 11.8 MB |
 | Bandbreite | 100 GB/Monat (weiches Limit) |
 | Builds | 10 pro Stunde (weiches Limit) |
 | Sichtbarkeit | immer öffentlich, nicht einschränkbar |
