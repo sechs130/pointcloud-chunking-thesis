@@ -213,6 +213,11 @@
 
     // Über reveal registriert, damit die Taste auch in der Hilfe (?) auftaucht.
     if (typeof Reveal !== 'undefined' && Reveal.addKeyBinding) {
+      // Der getestete RF-Presenter (VID_25A7/PID_1001, PowerPoint-Modus)
+      // sendet Pfeil runter/hoch. Explizit horizontal blättern, damit Reveal
+      // die Signale nicht als Navigation innerhalb vertikaler Stacks deutet.
+      Reveal.addKeyBinding(40, function () { Reveal.next(); });
+      Reveal.addKeyBinding(38, function () { Reveal.prev(); });
       Reveal.addKeyBinding(
         { keyCode: 83, key: 'S', description: 'Sprecheransicht öffnen' },
         function () { openSpeaker(); }
