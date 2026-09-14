@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Sprecheransicht — Chunking ist Teil des Modells</title>
+  <!--
+    Bewusst eine echte Datei mit ausgelagertem CSS und JS.
+
+    Die Sprecheransicht von reveal.js 5 wird per document.write in ein
+    about:blank-Fenster geschrieben und enthaelt inline <style> und inline
+    <script>. Ein about:blank-Fenster erbt die Content-Security-Policy seines
+    Oeffners; unter der Plattform-CSP (default-src 'self') wird dort also beides
+    blockiert, und das Fenster bleibt bei "Loading speaker view..." stehen.
+
+    Diese Datei umgeht das nicht, sie braucht es gar nicht: externe Ressourcen
+    derselben Origin sind unter default-src 'self' erlaubt. Damit laeuft
+    dieselbe Ansicht unter Flask, auf GitHub Pages und ab file://.
+
+    Begruendung und Messwerte: audit/13_SPEAKER_NOTES_INCIDENT.md
+  -->
+  <link rel="stylesheet" href="speaker.css">
+</head>
+<body>
+  <header class="bar">
+    <span class="position"><span id="slide-index">–</span> <span class="of">von</span> <span id="slide-total">–</span></span>
+    <span class="status" id="status" data-state="waiting">Verbinde …</span>
+    <span class="clocks">
+      <span class="clock" id="clock" title="Uhrzeit">--:--</span>
+      <button class="timer" id="timer" type="button" title="Klicken setzt die Stoppuhr zurück">00:00</button>
+    </span>
+  </header>
+
+  <main>
+    <section class="pane notes-pane" aria-labelledby="notes-heading">
+      <h2 id="notes-heading">Notizen</h2>
+      <h3 class="slide-title" id="current-title">—</h3>
+      <div class="notes" id="notes">
+        <p class="placeholder">Für diese Folie ist keine Sprechernotiz hinterlegt.</p>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="pane" aria-labelledby="onscreen-heading">
+        <h2 id="onscreen-heading">Auf der Leinwand</h2>
+        <div class="onscreen" id="onscreen">—</div>
+      </section>
+
+      <section class="pane" aria-labelledby="next-heading">
+        <h2 id="next-heading">Als Nächstes</h2>
+        <h3 class="slide-title" id="next-title">—</h3>
+        <div class="next-notes" id="next-notes"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="bar">
+    <span class="hint">← → blättern auch von hier aus</span>
+    <span class="hint" id="deck-name"></span>
+  </footer>
+
+  <script src="speaker.js"></script>
+</body>
+</html>

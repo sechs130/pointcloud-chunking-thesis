@@ -1,0 +1,1168 @@
+/* Point Cloud Toolkit.
+   Tokens, Kopfleiste, Bedienelemente und Motion kommen aus /assets/base.css. */
+
+:root {
+  --accent: #0a7048;
+  --viewer-bg: #0d141b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --accent: #3fc48b;
+    --viewer-bg: #06090d;
+  }
+}
+
+/* --- Kopfleiste ----------------------------------------------------------
+   Die App ist Vortrag und Werkzeug zugleich. Der Rueckweg zur Praesentation
+   liegt deshalb dauerhaft in der Leiste, nicht versteckt am Seitenende. */
+
+.app-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.deck-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: var(--ls-sm);
+  color: var(--accent);
+  text-decoration: none;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: 999px;
+  border: 1px solid var(--separator);
+  background: var(--fill);
+  transition: background-color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.deck-link svg {
+  width: 1em;
+  height: 1em;
+  flex: none;
+}
+
+.deck-link:hover { background: var(--fill-strong); }
+.deck-link:active { transform: scale(0.97); }
+
+@media (max-width: 44rem) {
+  .deck-link span,
+  .deck-link { font-size: var(--fs-xs); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-link { transition: none; }
+  .deck-link:active { transform: none; }
+}
+
+/* --- Raster --------------------------------------------------------------
+   Steuerung links, Vorschau rechts. Der Seitenkopf und die breiten Abschnitte
+   laufen ueber beide Spalten. */
+
+.workspace {
+  width: min(var(--content-width-wide), 100%);
+  margin: 0 auto;
+  padding: var(--sp-10) clamp(var(--sp-4), 4vw, var(--sp-12)) var(--sp-16);
+  display: grid;
+  grid-template-columns: minmax(19rem, 26rem) minmax(0, 1fr);
+  gap: var(--sp-5);
+  align-items: stretch;
+}
+
+.page-head {
+  grid-column: 1 / -1;
+}
+
+.control-panel {
+  padding: var(--sp-6);
+}
+
+.viewer-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- Abschnittskopf ------------------------------------------------------ */
+
+.section-heading,
+.viewer-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.section-heading h2,
+.viewer-heading h2,
+.case-study h2 {
+  font-size: var(--fs-lg);
+  letter-spacing: var(--ls-lg);
+}
+
+.section-heading p {
+  margin-top: var(--sp-1);
+  color: var(--label-2);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+  line-height: var(--lh-body);
+}
+
+.step {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* --- Formular ------------------------------------------------------------ */
+
+.file-actions,
+.merge-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.file-actions {
+  margin-top: var(--sp-6);
+}
+
+.file-name {
+  margin: var(--sp-3) 0 0;
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  overflow-wrap: anywhere;
+}
+
+.advanced-options {
+  margin-top: var(--sp-4);
+  border-top: 1px solid var(--separator);
+  padding-top: var(--sp-3);
+}
+
+/* Bedienziel 2.25rem (36px): line-height gleich min-height zentriert den Text,
+   ohne display zu aendern - sonst verliert <summary> ihr natives Dreieck. */
+.advanced-options summary {
+  min-height: 2.25rem;
+  line-height: 2.25rem;
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+  font-weight: 650;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: opacity var(--dur-press) var(--ease-out);
+}
+
+/* Druck-Feedback wie .back-link: Deckkraft statt Skalierung, weil kein Button */
+.advanced-options summary:active {
+  opacity: 0.6;
+  transition-duration: var(--dur-press);
+}
+
+.advanced-options p {
+  color: var(--label-2);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+}
+
+.advanced-options textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  /* Monospace hat feste Zeichenbreiten - 0 statt --ls-xs, wie bei .step und
+     .metrics dd weiter unten in dieser Datei. */
+  letter-spacing: 0;
+}
+
+.chunk-navigator {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+}
+
+.chunk-navigator label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.chunk-navigator select {
+  max-width: 18rem;
+}
+
+/* Groesseres Bedienziel als der Button-Standard (2.5rem), weil diese Leiste
+   direkt unter dem Canvas fuer schnelles Vor-/Zurueckklicken gedacht ist. */
+.chunk-navigator .button {
+  min-height: 2.75rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: var(--sp-3);
+  margin-top: var(--sp-6);
+}
+
+.form-grid label {
+  display: block;
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  font-weight: 640;
+}
+
+.form-grid input,
+.form-grid select {
+  margin-top: var(--sp-2);
+}
+
+.strategy-description {
+  min-height: 2.25rem;
+  margin: var(--sp-3) 0 0;
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+}
+
+.button.full {
+  margin-top: var(--sp-5);
+}
+
+/* --- Kennzahlen ---------------------------------------------------------- */
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: var(--sp-5) 0 0;
+  border-top: 1px solid var(--separator);
+  border-bottom: 1px solid var(--separator);
+}
+
+.metrics div {
+  padding: var(--sp-3) var(--sp-2);
+  min-width: 0;
+}
+
+.metrics div + div {
+  border-left: 1px solid var(--separator);
+}
+
+.metrics dt {
+  color: var(--label-3);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.metrics dd {
+  margin: var(--sp-1) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 640;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  margin-top: var(--sp-3);
+}
+
+/* --- Vorschau ------------------------------------------------------------
+   Die Szene folgt dem Zeiger 1:1 und laeuft nach dem Loslassen mit der
+   Wurfgeschwindigkeit aus; die Physik dazu steht in app.js. */
+
+.viewer-heading {
+  justify-content: space-between;
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  border-bottom: 1px solid var(--separator);
+}
+
+.viewer-heading h2 {
+  margin-top: var(--sp-1);
+}
+
+.viewer-help {
+  color: var(--label-3);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-2xs);
+}
+
+#point-viewer {
+  display: block;
+  width: 100%;
+  height: clamp(28rem, 58vh, 40rem);
+  background: var(--viewer-bg);
+  cursor: grab;
+  touch-action: none;
+}
+
+#point-viewer:active {
+  cursor: grabbing;
+}
+
+.viewer-empty {
+  position: absolute;
+  inset: 52% var(--sp-5) auto;
+  margin: 0;
+  color: var(--label-3);
+  font-size: var(--fs-base);
+  text-align: center;
+  pointer-events: none;
+}
+
+/* --- Zusammenfuehren und Kontext ----------------------------------------- */
+
+.merge-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.9fr) minmax(20rem, 1.4fr);
+  gap: var(--sp-6);
+  align-items: center;
+  padding: var(--sp-5) var(--sp-6);
+}
+
+.merge-panel .file-name {
+  margin: 0;
+  flex: 1 1 11rem;
+}
+
+.case-study {
+  grid-column: 1 / -1;
+  padding: var(--sp-4) var(--sp-1) 0;
+}
+
+.case-study h2 {
+  margin: var(--sp-2) 0 var(--sp-4);
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-6);
+}
+
+.case-grid p {
+  color: var(--label-2);
+  font-size: var(--fs-base);
+  letter-spacing: var(--ls-base);
+  line-height: var(--lh-body);
+}
+
+/* --- Anpassung an schmale Fenster ---------------------------------------- */
+
+@media (max-width: 56rem) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  #point-viewer {
+    height: 30rem;
+  }
+
+  .merge-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .case-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 33rem) {
+  .workspace {
+    padding: var(--sp-6) var(--sp-3) var(--sp-10);
+  }
+
+  .control-panel {
+    padding: var(--sp-5);
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics div + div {
+    border-left: 0;
+    border-top: 1px solid var(--separator);
+  }
+
+  #point-viewer {
+    height: 24rem;
+  }
+
+  .viewer-help {
+    display: none;
+  }
+}
+
+/* --- Betriebsart ---------------------------------------------------------
+   Welche Implementierung gerade rechnet, gehoert sichtbar an die Stelle, an
+   der jemand gleich auf einen Knopf drueckt - nicht in eine Fussnote. */
+
+.engine-note {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: 12px;
+  border: 1px solid var(--separator);
+  background: var(--fill);
+  color: var(--label-2);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.engine-note:empty { display: none; }
+
+/* Der Browser-Modus ist die Ausnahme und wird deshalb farblich angebunden,
+   die Vollversion bleibt neutral. */
+.engine-note.browser {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--separator));
+  background: color-mix(in srgb, var(--accent) 8%, var(--fill));
+  color: var(--label);
+}
+
+/* === Arbeitsablauf und Forschungsbereich ================================
+   Alles hier benutzt die Tokens aus /assets/base.css. Neue Farben entstehen
+   ueber color-mix aus --accent und --label, damit Hell- und Dunkelmodus ohne
+   zweite Palette funktionieren. */
+
+/* --- Bereichswechsel ----------------------------------------------------
+   `.workspace` ist ein Zweispaltenraster, und seine direkten Kinder wechseln
+   sich in den Spalten ab. Die beiden Ansichten sind Huellen um viele Abschnitte,
+   also wuerden sie als je *ein* Kind in einer Spalte landen und die andere leer
+   lassen. Beide spannen deshalb ueber die volle Breite und ordnen innen selbst
+   an: eine Spalte, von oben nach unten. Fuer einen Ablauf aus sechs Schritten
+   ist das die verstaendlichere Form als ein Nebeneinander. */
+
+.view-nav,
+.view {
+  grid-column: 1 / -1;
+}
+
+.view {
+  display: grid;
+  gap: var(--sp-5);
+  align-content: start;
+}
+
+.view-nav {
+  display: flex;
+  gap: var(--sp-2);
+  margin: var(--sp-5) 0;
+  border-bottom: 1px solid var(--separator);
+}
+
+.view-tab {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: var(--sp-3) var(--sp-1);
+  margin-bottom: -1px;
+  color: var(--label-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: var(--ls-sm);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+
+.view-tab + .view-tab { margin-left: var(--sp-4); }
+.view-tab:hover { color: var(--label); }
+
+.view-tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* --- Ablaufkarte -------------------------------------------------------- */
+
+.flow-map {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-5);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+}
+
+.flow-map li + li::before {
+  content: "→";
+  margin-right: var(--sp-2);
+  color: var(--label-3);
+}
+
+.flow-map a {
+  color: var(--label-2);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.flow-map a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* --- Die Kette, die Rekomposition erklaert ------------------------------ */
+
+.chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: chain;
+}
+
+.chain li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: 1 1 12rem;
+}
+
+.chain-step {
+  display: block;
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--separator);
+  background: var(--fill);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+  height: 100%;
+}
+
+.chain li + li::before {
+  content: "↓";
+  color: var(--label-3);
+  flex: none;
+}
+
+@media (min-width: 48rem) {
+  .chain li + li::before { content: "→"; }
+}
+
+/* --- Der ehrliche Hinweis ----------------------------------------------- */
+
+.disclosure {
+  margin: var(--sp-4) 0;
+  padding: var(--sp-4);
+  border-radius: var(--r-sm);
+  border: 1px solid color-mix(in oklab, var(--accent) 28%, var(--separator));
+  background: color-mix(in oklab, var(--accent) 7%, transparent);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+  line-height: var(--lh-body);
+}
+
+.honest {
+  margin: var(--sp-2) 0 0;
+  padding-left: var(--sp-3);
+  border-left: 2px solid color-mix(in oklab, var(--label) 24%, transparent);
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+}
+
+.hint {
+  margin: var(--sp-3) 0 0;
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+}
+
+.provenance,
+.changed {
+  margin: var(--sp-2) 0 0;
+  color: var(--label-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+/* --- Aufklappbare Herkunft --------------------------------------------- */
+
+.tech-details {
+  margin-top: var(--sp-5);
+  border-top: 1px solid var(--separator);
+  padding-top: var(--sp-3);
+}
+
+.tech-details > summary {
+  cursor: pointer;
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--ls-xs);
+}
+
+.tech-details > summary:hover { color: var(--accent); }
+.tech-details[open] > summary { margin-bottom: var(--sp-3); }
+
+/* --- Mechanikbeschreibungen -------------------------------------------- */
+
+.mechanics {
+  margin: var(--sp-3) 0 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.mechanics dt {
+  font-size: var(--fs-xs);
+  font-weight: 640;
+  letter-spacing: var(--ls-xs);
+}
+
+.mechanics dd {
+  margin: var(--sp-1) 0 0;
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+}
+
+/* --- Pruefliste -------------------------------------------------------- */
+
+.check-list {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: var(--sp-3);
+  align-items: start;
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--separator);
+  background: var(--fill);
+}
+
+.check-status {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 0;
+}
+
+.check-pass .check-status { color: #2f7d4f; }
+.check-fail .check-status { color: #b63a3a; }
+.check-skipped .check-status { color: var(--label-3); }
+
+.check-fail {
+  border-color: color-mix(in oklab, #b63a3a 40%, var(--separator));
+  background: color-mix(in oklab, #b63a3a 8%, transparent);
+}
+
+.check-id {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 640;
+  letter-spacing: var(--ls-xs);
+}
+
+.check-detail {
+  margin: var(--sp-1) 0 0;
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+}
+
+@media (max-width: 34rem) {
+  .check { grid-template-columns: 1fr; gap: var(--sp-1); }
+}
+
+/* --- Balken ------------------------------------------------------------- */
+
+.histogram {
+  display: grid;
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 5rem;
+  gap: var(--sp-3);
+  align-items: center;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+}
+
+.bar-label {
+  color: var(--label-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-track {
+  height: 0.7rem;
+  border-radius: 3px;
+  background: var(--fill-strong);
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.bar-count {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0;
+  color: var(--label-2);
+}
+
+.bar-note {
+  grid-column: 2 / -1;
+  color: var(--label-3);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0;
+}
+
+@media (max-width: 34rem) {
+  .bar { grid-template-columns: 5.5rem 1fr 4rem; gap: var(--sp-2); }
+}
+
+/* --- Tabellen ---------------------------------------------------------- */
+
+.wrap { overflow-x: auto; }
+
+.result-table,
+.confusion {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: var(--sp-3);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+}
+
+.result-table th,
+.result-table td,
+.confusion th,
+.confusion td {
+  text-align: left;
+  padding: var(--sp-2);
+  border-bottom: 1px solid var(--separator);
+  white-space: nowrap;
+}
+
+.result-table th,
+.confusion th {
+  color: var(--label-3);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.result-table td:not(:first-child),
+.confusion td {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0;
+}
+
+.result-table tr.is-over td { color: var(--label-3); }
+.confusion td.diagonal { font-weight: 700; }
+
+/* --- Etiketten --------------------------------------------------------- */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin: var(--sp-2) 0;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: var(--sp-2);
+  padding: 2px var(--sp-2);
+  border-radius: 999px;
+  border: 1px solid var(--separator);
+  background: var(--fill);
+  color: var(--label-2);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+
+.tags .tag { margin-left: 0; }
+
+.tag.t-best {
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--separator));
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.tag.t-experimental,
+.tag.t-experimental_lab {
+  border-color: color-mix(in oklab, #8255b8 45%, var(--separator));
+  color: color-mix(in oklab, #8255b8 75%, var(--label));
+}
+
+.tag.t-abandoned,
+.tag.t-documented_research {
+  color: var(--label-3);
+}
+
+.tag.t-final,
+.tag.t-core_ui {
+  border-color: color-mix(in oklab, #2f7d4f 45%, var(--separator));
+  color: color-mix(in oklab, #2f7d4f 80%, var(--label));
+}
+
+.tag.t-engineering_evidence {
+  border-color: color-mix(in oklab, #a06a1f 45%, var(--separator));
+  color: color-mix(in oklab, #a06a1f 85%, var(--label));
+}
+
+.tag.t-browser {
+  border-color: color-mix(in oklab, #2a7f8f 45%, var(--separator));
+  color: color-mix(in oklab, #2a7f8f 85%, var(--label));
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+/* --- Kontrollkaestchen und Knopfreihe ---------------------------------- */
+
+.checkbox {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: flex-start;
+  margin: var(--sp-4) 0;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+}
+
+/* `base.css` gibt jedem input, select und textarea `width: 100%`. Als Flex-Element
+   wird daraus die Flex-Basis, das Kästchen beansprucht die ganze Zeile und der
+   Text daneben landet ausserhalb der Karte. Deshalb hier ausdrücklich die
+   Eigenbreite zurückholen. */
+.checkbox input {
+  margin-top: 0.2em;
+  flex: none;
+  width: auto;
+}
+
+.checkbox > span { flex: 1; min-width: 0; }
+.checkbox small {
+  display: block;
+  margin-top: var(--sp-1);
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-body);
+}
+
+.checkbox.is-disabled { opacity: 0.62; }
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+
+/* --- Farbwahl im Viewer ------------------------------------------------ */
+
+.viewer-modes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.chip {
+  appearance: none;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: 999px;
+  border: 1px solid var(--separator);
+  background: var(--fill);
+  color: var(--label-2);
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: var(--ls-2xs);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.chip:hover:not(:disabled) { background: var(--fill-strong); }
+.chip:disabled { opacity: 0.5; cursor: default; }
+
+.chip.is-active {
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--separator));
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+/* --- Export ------------------------------------------------------------ */
+
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--sp-4);
+  margin: var(--sp-4) 0 var(--sp-6);
+}
+
+.export-option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--separator);
+  background: var(--fill);
+}
+
+.export-option h3 {
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+}
+
+.export-option p {
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+  flex: 1;
+}
+
+.export-option .button { align-self: flex-start; }
+
+.inline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin: 0;
+}
+
+.inline-meta dt {
+  color: var(--label-3);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.inline-meta dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0;
+}
+
+/* --- Fehlende Kennzahl ------------------------------------------------- */
+
+.unavailable {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-sm);
+  border: 1px dashed var(--separator);
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+}
+
+.unavailable strong {
+  display: block;
+  margin-bottom: var(--sp-1);
+  color: var(--label);
+}
+
+.unavailable p { margin: 0; }
+
+/* --- Forschungsbereich ------------------------------------------------- */
+
+.research-intro { margin-bottom: var(--sp-5); }
+
+.research-intro h2 {
+  font-size: var(--fs-lg);
+  letter-spacing: var(--ls-lg);
+  margin-top: var(--sp-1);
+}
+
+.research-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+
+.research-panel {
+  padding: var(--sp-6);
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.research-panel h3 {
+  font-size: var(--fs-base);
+  letter-spacing: var(--ls-base);
+}
+
+.research-panel h4 {
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+  margin-bottom: var(--sp-2);
+}
+
+.story { display: grid; gap: var(--sp-3); }
+
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--sp-4);
+}
+
+.story-cell p {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+}
+
+.story-decision {
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--accent) 7%, transparent);
+}
+
+.chart-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--sp-5);
+}
+
+/* --- Faehigkeitskarten ------------------------------------------------- */
+
+.capability-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: var(--sp-3);
+}
+
+.capability-card {
+  padding: var(--sp-4);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--separator);
+  background: var(--fill);
+}
+
+.capability-card h4 {
+  font-size: var(--fs-xs);
+  font-weight: 640;
+  letter-spacing: var(--ls-xs);
+  margin: 0;
+}
+
+.capability-card p {
+  margin: var(--sp-2) 0 0;
+  color: var(--label-2);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-xs);
+  line-height: var(--lh-body);
+}
+
+.capability-card .notes { margin-top: var(--sp-3); }
+
+.capability-card .notes ul {
+  margin: var(--sp-1) 0 0;
+  padding-left: var(--sp-5);
+  color: var(--label-2);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0;
+  line-height: var(--lh-body);
+}
+
+.numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin: var(--sp-4) 0;
+}
+
+.numbers div { min-width: 7rem; }
+
+.numbers strong {
+  display: block;
+  font-size: var(--fs-lg);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.numbers span {
+  color: var(--label-2);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-2xs);
+}
+
+.support-block h3,
+.recompose-result h3 {
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-sm);
+  margin-top: var(--sp-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-tab,
+  .chip { transition: none; }
+}
+
+/* Ein Block ohne Messreihe. Er sieht absichtlich anders aus als ein
+   Engineering-Block mit Problem, Untersuchung, Ergebnis und Entscheidung —
+   sonst behauptete die Form einen Beleg, den es nicht gibt. */
+
+.story-note {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-sm);
+  border: 1px dashed var(--separator);
+}
+
+.story-note h3 { font-size: var(--fs-base); letter-spacing: var(--ls-base); }

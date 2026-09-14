@@ -1,0 +1,549 @@
+/* ============================================================================
+   Deck-Stil für "Chunking ist Teil des Modells"
+
+   Baut auf den Tokens des App Hubs (public/assets/base.css) auf, ist aber
+   bewusst auf den hellen Modus festgelegt: Ein Vortrag ist eine einmalige,
+   kontrollierte Darstellung; ein Deck, das je nach Betriebssystem-Einstellung
+   die Farben wechselt, ist auf einem fremden Beamer ein Risiko.
+   Die Entscheidung ist in audit/11_SLIDE_QA.md begründet.
+
+   Geladen NACH reveal.js + theme, deshalb gewinnen diese Regeln.
+   ========================================================================= */
+
+:root {
+  --bg:             #ffffff;
+  --bg-inset:       #f6f7f9;
+  --label:          #16181c;
+  --label-2:        #4b4f57;
+  --label-3:        #7b7f88;
+  --separator:      #e3e4e8;
+  --separator-2:    #d3d5da;
+  --accent:         #0a63c9;
+  --accent-soft:    #eef4fd;
+  --warm:           #c8541f;
+  --ok:             #12805c;
+
+  /* Federkurven, kritisch gedämpft (kein Überschwingen) — Apple-Voreinstellung */
+  --spring:         cubic-bezier(0.32, 0.72, 0, 1);
+  --dur:            340ms;
+  --dur-fast:       180ms;
+}
+
+/* ---------------------------------------------------------------- Grundlage */
+
+.reveal-viewport { background: var(--bg); }
+
+.reveal {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--label);
+  letter-spacing: 0;
+}
+
+/* Die Chrome liegt oben über der Folie; die Folien bekommen dafür Luft,
+   damit Titel und Skip-Knopf sich nie überlagern. */
+.reveal .slides { text-align: left; }
+.reveal .slides > section,
+.reveal .slides > section > section { padding-top: 2.2rem; }
+
+/* Typografie: Tracking ist größenspezifisch, nie ein fester Wert für alles.
+   Große Schrift steht optisch zu weit auseinander und wird enger gestellt. */
+.reveal h1,
+.reveal h2 {
+  font-size: 2.05em;
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  color: var(--label);
+  text-transform: none;
+  margin: 0 0 0.5em;
+  text-shadow: none;
+}
+
+.reveal h3 {
+  font-size: 1.4em;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.014em;
+  margin: 0 0 0.6em;
+}
+
+.reveal p { line-height: 1.45; margin: 0 0 0.7em; }
+.reveal strong { font-weight: 700; }
+.reveal em { font-style: italic; }
+
+.reveal ul, .reveal ol { margin: 0 0 0.6em; display: block; }
+.reveal li { line-height: 1.4; margin-bottom: 0.38em; }
+.reveal li::marker { color: var(--label-3); }
+
+.reveal code,
+.reveal .literal,
+.reveal kbd {
+  font-family: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+  font-size: 0.86em;
+  letter-spacing: 0;
+  background: var(--bg-inset);
+  border: 1px solid var(--separator);
+  border-radius: 5px;
+  padding: 0.06em 0.3em;
+  color: var(--label);
+}
+
+.reveal a { color: var(--accent); text-decoration: none; }
+
+/* Bilder tragen die Folie, deshalb kein Rahmen und kein Schatten. */
+.reveal section img {
+  border: none;
+  box-shadow: none;
+  background: none;
+  max-height: 62vh;
+  width: auto;
+  margin: 0 auto;
+  display: block;
+}
+.reveal .imageblock { margin: 0; }
+.reveal .imageblock .title { display: none; }
+
+/* Eine Folie, ein Bild: dann darf es fast die ganze Höhe nehmen. */
+.reveal .wide img { max-height: 74vh; width: 100%; object-fit: contain; }
+/* Steht unter dem Bild noch Fließtext, muss das Bild Platz lassen — sonst
+   rutscht der letzte Absatz aus dem 1600x900-Rahmen. */
+.reveal .wide.compact img { max-height: 54vh; }
+
+/* Eine Folie, die nur aus einem Bild besteht: Der Titel steht in der Grafik,
+   das Bild bekommt dafür die ganze Fläche. Der AsciiDoc-Titel bleibt als
+   Navigations- und Gliederungsanker erhalten, nur unsichtbar. */
+.reveal section.full-bleed {
+  padding-top: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal section.full-bleed .imageblock { width: 100%; }
+.reveal section.full-bleed img { max-height: 86vh; width: 100%; object-fit: contain; }
+
+/* ------------------------------------------------------------- Titelfolie */
+
+.reveal section.title { display: flex; flex-direction: column; }
+.reveal section.title h1 {
+  font-size: 2.7em;
+  font-weight: 700;
+  line-height: 1.03;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.2em;
+  color: var(--label);
+}
+/* Die vom Konverter erzeugte Autorenzeile am Folienende wird ausgeblendet;
+   Name und Kontext stehen bewusst gesetzt in der Meta-Zeile oben. */
+.reveal section.title .byline { display: none; }
+.reveal section.title .preamble { display: contents; }
+.reveal .subtitle {
+  font-size: 1.02em;
+  color: var(--label-2);
+  max-width: 26em;
+  margin-bottom: 0.5em;
+}
+.reveal .meta {
+  font-size: 0.74em;
+  color: var(--label-3);
+  line-height: 1.45;
+  margin-bottom: 0.5em;
+}
+.reveal .hero-image img {
+  max-height: 54vh;
+  width: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+/* ------------------------------------------------------------- Bausteine */
+
+.reveal .lead {
+  font-size: 0.94em;
+  color: var(--label-2);
+  max-width: 40em;
+  line-height: 1.45;
+}
+
+/* Asciidoctor verpackt einen Open Block als
+   <div class="openblock ROLE"><div class="content"> … </div></div>,
+   das Raster muss also auf .content sitzen. Die Spalten sind Example Blocks,
+   weil sich Open Blocks nicht ineinander schachteln lassen. */
+.reveal .two-col > .content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6em;
+  align-items: start;
+}
+.reveal .two-col.tight > .content { gap: 1.1em; }
+/* Diagramm links, Erklärung rechts: das Diagramm trägt die Folie und
+   bekommt deshalb mehr als die Hälfte. */
+.reveal .two-col.chart-left > .content { grid-template-columns: 1.5fr 1fr; }
+.reveal .two-col.chart-left .col img { max-height: 56vh; }
+.reveal .two-col.compact > .content { gap: 2em; }
+.reveal .two-col.compact { font-size: 0.74em; margin-top: 0.5em; }
+
+.reveal .exampleblock.col { margin: 0; min-width: 0; }
+.reveal .exampleblock.col > .content { min-width: 0; }
+.reveal .col > .content > :first-child { margin-top: 0; }
+.reveal .col p,
+.reveal .col li { font-size: 0.8em; }
+.reveal .col > .content > .paragraph > p > strong:only-child { font-size: 1.06em; }
+.reveal .two-col.tight img { max-height: 46vh; }
+.reveal .two-col.tight .col p { font-size: 0.66em; color: var(--label-2); }
+
+.reveal .callout {
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 0.62em 0.85em;
+  font-size: 0.82em;
+  color: var(--label);
+  line-height: 1.4;
+  margin: 0.7em 0 0;
+}
+.reveal .callout.strong {
+  font-size: 0.92em;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+}
+.reveal .callout p:last-child { margin-bottom: 0; }
+
+.reveal .limits {
+  font-size: 0.66em;
+  color: var(--label-3);
+  border-top: 1px solid var(--separator);
+  padding-top: 0.7em;
+  margin-top: 1em;
+  line-height: 1.45;
+}
+
+.reveal .research-question {
+  border-left: 5px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 12px 12px 0;
+  padding: 0.85em 1.1em;
+  margin: 0 0 1em;
+}
+.reveal .research-question em,
+.reveal .research-question p {
+  font-size: 0.94em;
+  line-height: 1.4;
+  color: var(--label);
+  margin: 0;
+}
+
+/* Kennzahlen */
+.reveal .big-stats > .content,
+.reveal .result-strip > .content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4em;
+}
+.reveal .big-stats { margin: 0.3em 0 1.1em; }
+.reveal .result-strip {
+  margin-top: 0.8em;
+  border-top: 1px solid var(--separator);
+  padding-top: 0.8em;
+}
+.reveal .stat p,
+.reveal .stat { margin: 0; }
+.reveal .stat strong {
+  display: block;
+  font-size: 1.75em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  color: var(--accent);
+}
+.reveal .result-strip .stat strong { font-size: 1.35em; }
+.reveal .stat-label {
+  display: block;
+  font-size: 0.56em;
+  color: var(--label-2);
+  line-height: 1.35;
+  margin-top: 0.35em;
+  letter-spacing: 0.004em;
+}
+.reveal .result-strip .stat-label { font-size: 0.5em; }
+
+.reveal .fixed-list li,
+.reveal .varied-list li { font-size: 0.72em; margin-bottom: 0.26em; }
+.reveal .varied-list li { font-weight: 600; color: var(--accent); }
+
+/* Tabellen */
+.reveal table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.5em;
+  margin: 0.3em 0;
+}
+.reveal table th,
+.reveal table td {
+  border: none;
+  border-bottom: 1px solid var(--separator);
+  padding: 0.42em 0.6em;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.34;
+}
+.reveal table th {
+  font-weight: 700;
+  color: var(--label-2);
+  border-bottom: 1.5px solid var(--separator-2);
+}
+.reveal table tr:last-child td { border-bottom: none; }
+.reveal .tableblock caption,
+.reveal table caption { display: none; }
+
+/* --------------------------------------------------------------- Tech-Stack */
+/* Reveal skaliert die 1600x900-Folie als Ganzes. rem bezieht sich auf die
+   Wurzelschrift des Dokuments und skaliert deshalb NICHT mit — alle Maße hier
+   sind em, relativ zur Folienschrift. */
+
+.reveal .stack { display: flex; flex-direction: column; gap: 0.34em; }
+.reveal .stack-row {
+  display: grid;
+  grid-template-columns: 7.6em 1fr;
+  gap: 1em;
+  align-items: center;
+  background: var(--bg-inset);
+  border: 1px solid var(--separator);
+  border-radius: 12px;
+  padding: 0.42em 0.75em;
+}
+.reveal .stack-row.accent { background: var(--accent-soft); border-color: #cfe0f7; }
+.reveal .stack-stage {
+  font-size: 0.6em;
+  font-weight: 700;
+  color: var(--label-2);
+  letter-spacing: 0.012em;
+  line-height: 1.24;
+}
+.reveal .stack-items { display: flex; flex-wrap: wrap; gap: 0.4em; }
+.reveal .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34em;
+  background: #ffffff;
+  border: 1px solid var(--separator-2);
+  border-radius: 999px;
+  padding: 0.24em 0.62em;
+  font-size: 0.58em;
+  font-weight: 600;
+  color: var(--label);
+  white-space: nowrap;
+}
+.reveal .chip img {
+  width: 1.05em;
+  height: 1.05em;
+  margin: 0;
+  display: block;
+  max-height: none;
+}
+.reveal .chip.textmark { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.reveal .stack-note {
+  font-size: 0.55em;
+  color: var(--label-3);
+  margin-top: 0.9em;
+  line-height: 1.4;
+  max-width: 46em;
+}
+
+/* -------------------------------------------------------------- Demo-Folie */
+
+.reveal section.demo-slide { display: flex; flex-direction: column; }
+.reveal .demo-flow > .content {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.7em;
+}
+.reveal .demo-flow { margin: 0.6em 0 1.4em; }
+.reveal .demo-flow .step {
+  background: var(--bg-inset);
+  border: 1px solid var(--separator);
+  border-radius: 12px;
+  padding: 0.7em 0.6em;
+  font-size: 0.6em;
+  line-height: 1.3;
+  color: var(--label);
+}
+.reveal .demo-flow .step strong {
+  display: block;
+  color: var(--accent);
+  font-size: 1.4em;
+  margin-bottom: 0.24em;
+  letter-spacing: -0.02em;
+}
+.reveal .demo-flow .step p { margin: 0; }
+
+.reveal .two-col.demo-preview > .content { grid-template-columns: 1fr 1.15fr; align-items: center; }
+.reveal .demo-preview img {
+  max-height: 42vh;
+  width: 100%;
+  object-fit: contain;
+  border: 1px solid var(--separator-2);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%), 0 10px 28px rgb(0 0 0 / 8%);
+}
+.reveal .demo-hint {
+  font-size: 0.62em;
+  color: var(--label-2);
+  line-height: 1.45;
+  margin-top: 1.1em;
+}
+
+.reveal .demo-cta {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.88em;
+  font-weight: 650;
+  letter-spacing: -0.008em;
+  padding: 0.62em 1.5em;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  /* Rückmeldung sitzt auf dem Druck, nicht auf dem Loslassen */
+  transition: transform var(--dur-fast) var(--spring),
+              background-color var(--dur-fast) var(--spring);
+}
+.reveal .demo-cta:hover { background: #0a56ad; }
+.reveal .demo-cta:active { transform: scale(0.972); }
+.reveal .demo-cta:focus-visible { outline: 3px solid #7fb2f0; outline-offset: 3px; }
+
+.reveal section.backup-divider h2 { color: var(--label-3); }
+
+/* ------------------------------------------------------------------ Chrome */
+
+.deck-chrome {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.1rem;
+  pointer-events: none;
+}
+.deck-chrome > * { pointer-events: auto; }
+
+/* Rechte Gruppe: Notizen und Skip stehen zusammen, damit `space-between`
+   weiterhin nur zwei Kinder ausrichtet. */
+.deck-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deck-back,
+.deck-skip,
+.deck-notes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  font: 600 0.85rem/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: -0.002em;
+  color: var(--label);
+  text-decoration: none;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  /* Durchscheinendes Material, damit die Folie darunter sichtbar bleibt */
+  background: rgb(255 255 255 / 74%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 60%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%), 0 6px 18px rgb(0 0 0 / 7%);
+  transition: transform var(--dur-fast) var(--spring),
+              background-color var(--dur-fast) var(--spring),
+              opacity var(--dur) var(--spring);
+}
+.deck-back svg { width: 0.9rem; height: 0.9rem; }
+.deck-back { color: var(--label-2); }
+.deck-back:hover,
+.deck-skip:hover { background: rgb(255 255 255 / 94%); }
+.deck-back:active,
+.deck-skip:active { transform: scale(0.965); }
+.deck-back:focus-visible,
+.deck-skip:focus-visible { outline: 3px solid #7fb2f0; outline-offset: 3px; }
+
+.deck-skip { color: var(--accent); }
+.deck-skip kbd {
+  font: 600 0.66rem/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  background: var(--accent-soft);
+  border: 1px solid #cfe0f7;
+  border-radius: 4px;
+  padding: 0.16rem 0.34rem;
+  color: var(--accent);
+}
+
+/* Im Vollbild tritt die Chrome zurück, bis der Zeiger sie sucht. */
+/* Der Notizen-Knopf gehoert dem Vortragenden, nicht der Leinwand: er traegt
+   deshalb weniger Gewicht als der Skip-Knopf und verschwindet im Vollbild
+   zusammen mit der uebrigen Chrome. */
+.deck-notes {
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--label-2);
+  background: rgb(255 255 255 / 62%);
+}
+
+.deck-notes:hover { color: var(--label); }
+.deck-notes svg { width: 0.95em; height: 0.95em; flex: none; }
+
+body.deck-immersive .deck-chrome { opacity: 0.16; }
+body.deck-immersive .deck-chrome:hover { opacity: 1; }
+
+/* Reveal-Steuerung an die Palette angleichen */
+.reveal .controls { color: var(--label-3); }
+.reveal .progress { color: var(--accent); height: 4px; background: var(--separator); }
+.reveal .slide-number {
+  background: rgb(255 255 255 / 78%);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: var(--label-2);
+  font-size: 0.62rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.22rem 0.6rem;
+  right: 0.9rem;
+  bottom: 0.9rem;
+}
+
+/* ------------------------------------------------- Barrierefreiheit / Druck */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal .slides section,
+  .deck-back, .deck-skip, .reveal .demo-cta {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+  .reveal .demo-cta:active,
+  .deck-back:active,
+  .deck-skip:active { transform: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .deck-back, .deck-skip, .reveal .slide-number {
+    background: #ffffff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: var(--separator-2);
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root { --label-2: #33373d; --label-3: #55595f; --separator: #b9bcc3; }
+  .deck-back, .deck-skip { background: #ffffff; border-color: #55595f; }
+  .reveal .callout { border-left-width: 6px; }
+}
+
+/* Kleinere Fenster: Reveal skaliert die Folie selbst, aber die Chrome nicht. */
+@media (max-width: 900px) {
+  .deck-chrome { padding: 0.6rem; }
+  .deck-back span { display: none; }
+  .deck-skip kbd { display: none; }
+}

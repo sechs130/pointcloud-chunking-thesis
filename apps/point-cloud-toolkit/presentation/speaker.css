@@ -1,0 +1,204 @@
+/*
+ * Sprecheransicht. Dunkel, ruhig, gross genug zum Ablesen im Stehen.
+ *
+ * Bewusst eigenstaendig statt auf base.css aufgebaut: dieses Fenster steht auf
+ * dem Notebook des Vortragenden, nicht in der Plattform, und es muss auch dann
+ * funktionieren, wenn es aus einer entpackten ZIP ab file:// geoeffnet wird.
+ */
+
+:root {
+  color-scheme: dark;
+
+  --bg:          #16181c;
+  --surface:     #1e2127;
+  --surface-2:   #262a31;
+  --separator:   #343a43;
+  --label:       #f2f4f7;
+  --label-2:     #b6bdc8;
+  --label-3:     #7e8794;
+  --accent:      #4da3ff;
+  --good:        #46c27a;
+  --warn:        #e8a33d;
+
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--bg);
+  color: var(--label);
+  font: 400 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Leisten ------------------------------------------------------------- */
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--surface);
+  border-bottom: 1px solid var(--separator);
+}
+
+footer.bar {
+  border-bottom: 0;
+  border-top: 1px solid var(--separator);
+  color: var(--label-3);
+  font-size: 0.8rem;
+}
+
+.position {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.position .of { color: var(--label-3); font-weight: 400; }
+
+.status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--separator);
+  color: var(--label-2);
+}
+
+/* Der Verbindungszustand ist die eine Information, die man sofort braucht,
+   wenn etwas nicht stimmt - deshalb traegt er Farbe, sonst nichts hier oben. */
+.status[data-state="connected"] { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, var(--separator)); }
+.status[data-state="lost"]      { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--separator)); }
+
+.clocks { display: flex; align-items: center; gap: var(--sp-3); }
+
+.clock {
+  color: var(--label-2);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+}
+
+.timer {
+  font: 600 1.3rem/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--label);
+  background: var(--surface-2);
+  border: 1px solid var(--separator);
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+
+.timer:hover { background: var(--separator); }
+.timer:active { transform: scale(0.97); }
+
+/* --- Flaeche ------------------------------------------------------------- */
+
+main {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  min-height: 0;
+}
+
+.side {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--sp-4);
+  min-height: 0;
+}
+
+.pane {
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  border-radius: 14px;
+  padding: var(--sp-4) var(--sp-5);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pane h2 {
+  margin: 0 0 var(--sp-2);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--label-3);
+}
+
+.slide-title {
+  margin: 0 0 var(--sp-3);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--label);
+}
+
+/* --- Notizen ------------------------------------------------------------- */
+
+.notes {
+  overflow-y: auto;
+  font-size: 1.28rem;
+  line-height: 1.55;
+  color: var(--label);
+}
+
+.notes p { margin: 0 0 0.8em; }
+.notes ul, .notes ol { margin: 0 0 0.8em; padding-left: 1.4em; }
+.notes li { margin-bottom: 0.35em; }
+.notes strong { color: #fff; font-weight: 700; }
+.notes em { color: var(--label-2); }
+
+.notes code,
+.next-notes code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--surface-2);
+  border: 1px solid var(--separator);
+  border-radius: 5px;
+  padding: 0.05em 0.3em;
+}
+
+.placeholder { color: var(--label-3); font-style: italic; }
+
+.onscreen {
+  overflow-y: auto;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--label-2);
+  max-height: 9rem;
+}
+
+.next-notes {
+  overflow-y: auto;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--label-2);
+}
+
+.next-notes p { margin: 0 0 0.6em; }
+
+/* Schmale Fenster: die Spalten untereinander statt nebeneinander. */
+@media (max-width: 60rem) {
+  main { grid-template-columns: 1fr; grid-template-rows: 1.4fr 1fr; }
+  .notes { font-size: 1.1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer:active { transform: none; }
+}

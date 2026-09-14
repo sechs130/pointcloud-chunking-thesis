@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" width="1200" height="620" role="img" aria-labelledby="archTitle archDesc">
+  <title id="archTitle">Drei Schichten mit persistenten Schnittstellen</title>
+  <desc id="archDesc">Schicht eins zerlegt rohe PLY-Szenen in einen persistenten Chunk-Datensatz. Schicht zwei bindet diesen Datensatz über eine materialisierte Runtime-Konfiguration an das feste PTv3-Rezept, trainiert, wählt den besten Checkpoint aus und exportiert über die Chunk-Inferenz einen Tile-Cache mit Koordinaten und Klassenwahrscheinlichkeiten. Schicht drei gruppiert diesen Cache nach Szene, wendet die Merge-Regel an und erzeugt das Ergebnisbündel. Zwischen allen Schichten liegen persistente, inspizierbare Dateien statt In-Memory-Zustand, weshalb jede Stufe einzeln wiederholbar, cachebar und parallelisierbar ist.</desc>
+  <style>
+    .layer { fill:#f7f8fa; stroke:#c9ccd3; stroke-width:1.6; stroke-dasharray:7 6; rx:14 }
+    .data  { fill:#eef4fd; stroke:#2a78d6; stroke-width:2.2; rx:9 }
+    .proc  { fill:#fdf1ea; stroke:#eb6834; stroke-width:2.2; rx:9 }
+    .lt    { font:700 15px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#4b4f57; letter-spacing:.05em }
+    .t     { font:600 17px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#16181c; text-anchor:middle }
+    .s     { font:400 13px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#4b4f57; text-anchor:middle }
+    .edge  { font:600 12.5px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#6b7078 }
+    .par   { font:600 13px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#12805c }
+    .parq  { font:400 12.5px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#7b7f88 }
+    .note  { font:600 13.5px system-ui,-apple-system,'Segoe UI',sans-serif; fill:#0a63c9 }
+  </style>
+  <defs>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8b9099"/>
+    </marker>
+  </defs>
+
+  <!-- ============ Schicht 1 ============ -->
+  <rect class="layer" x="16" y="40" width="1046" height="106"/>
+  <text class="lt" x="30" y="32">SCHICHT 1 · ZERLEGUNG</text>
+
+  <rect class="data" x="40"  y="62" width="212" height="62"/>
+  <text class="t" x="146" y="88">DALES PLY</text>
+  <text class="s" x="146" y="108">29 + 11 Szenen · 505 Mio. Punkte</text>
+
+  <rect class="proc" x="312" y="62" width="212" height="62"/>
+  <text class="t" x="418" y="88">Chunker</text>
+  <text class="s" x="418" y="108">Index statt Punktkopie</text>
+
+  <rect class="data" x="584" y="62" width="212" height="62"/>
+  <text class="t" x="690" y="88">Chunk-Datensatz</text>
+  <text class="s" x="690" y="108">9.145 – 21.713 Train-Chunks</text>
+
+  <text class="par"  x="848" y="88">szenen-parallel</text>
+  <text class="parq" x="848" y="107">32 Worker</text>
+
+  <!-- ============ Schicht 2 ============ -->
+  <rect class="layer" x="16" y="196" width="1046" height="184"/>
+  <text class="lt" x="30" y="188">SCHICHT 2 · LERNEN</text>
+
+  <rect class="data" x="40"  y="218" width="212" height="62"/>
+  <text class="t" x="146" y="244">Runtime-Config</text>
+  <text class="s" x="146" y="264">je Lauf materialisiert</text>
+
+  <rect class="proc" x="312" y="218" width="212" height="62"/>
+  <text class="t" x="418" y="244">Training</text>
+  <text class="s" x="418" y="264">DDP · 2 GPU · AMP</text>
+
+  <rect class="data" x="584" y="218" width="212" height="62"/>
+  <text class="t" x="690" y="244">model_best</text>
+  <text class="s" x="690" y="264">nach Holdout-mIoU gewählt</text>
+
+  <rect class="proc" x="584" y="306" width="212" height="56"/>
+  <text class="t" x="690" y="330">Chunk-Inferenz</text>
+  <text class="s" x="690" y="349">map-Phase über Chunks</text>
+
+  <rect class="data" x="312" y="306" width="212" height="56"/>
+  <text class="t" x="418" y="330">Tile-Cache</text>
+  <text class="s" x="418" y="349">Koordinaten + Wahrscheinlichkeiten</text>
+
+  <text class="par"  x="848" y="244">daten-parallel</text>
+  <text class="parq" x="848" y="263">Peak 19,6 – 20,2 GB</text>
+  <text class="par"  x="848" y="332">der eigene Zusatz</text>
+  <text class="parq" x="848" y="351">+101 Zeilen im Test-Pfad</text>
+
+  <!-- ============ Schicht 3 ============ -->
+  <rect class="layer" x="16" y="430" width="1046" height="106"/>
+  <text class="lt" x="30" y="422">SCHICHT 3 · REKOMBINATION</text>
+
+  <rect class="proc" x="312" y="452" width="212" height="62"/>
+  <text class="t" x="418" y="478">Merge-Regel</text>
+  <text class="s" x="418" y="498">gruppiert nach Szene</text>
+
+  <rect class="data" x="584" y="452" width="212" height="62"/>
+  <text class="t" x="690" y="478">Ergebnisbündel</text>
+  <text class="s" x="690" y="498">Prediction · Confusion · Support</text>
+
+  <text class="par"  x="848" y="478">reduce-Phase</text>
+  <text class="parq" x="848" y="497">3,63× auf 4 Workern</text>
+
+  <!-- ============ Verdrahtung, kreuzungsfrei ============ -->
+  <g stroke="#8b9099" stroke-width="2" fill="none" marker-end="url(#a2)">
+    <!-- Schicht 1 -->
+    <path d="M252 93 H306"/>
+    <path d="M524 93 H578"/>
+
+    <!-- Chunk-Datensatz -> Runtime-Config (train split), durch die Lücke zwischen den Schichten -->
+    <path d="M690 124 V171 H146 V212"/>
+
+    <!-- Schicht 2, Zeile 1 -->
+    <path d="M252 249 H306"/>
+    <path d="M524 249 H578"/>
+
+    <!-- model_best -> Chunk-Inferenz: senkrecht, kreuzt nichts -->
+    <path d="M690 280 V300"/>
+
+    <!-- Chunk-Datensatz -> Chunk-Inferenz (test split), in der freien rechten Spur -->
+    <path d="M796 93 H1116 V334 H802"/>
+
+    <!-- Chunk-Inferenz -> Tile-Cache -->
+    <path d="M584 334 H530"/>
+
+    <!-- Tile-Cache -> Merge-Regel -->
+    <path d="M418 362 V446"/>
+
+    <!-- Merge-Regel -> Ergebnisbündel -->
+    <path d="M524 483 H578"/>
+  </g>
+
+  <!-- Kantenbeschriftungen, auf weißem Grund gesetzt -->
+  <g>
+    <rect x="404" y="162" width="86" height="18" fill="#ffffff"/>
+    <text class="edge" x="408" y="176">train split</text>
+
+    <rect x="1122" y="196" width="76" height="18" fill="#ffffff"/>
+    <text class="edge" x="1124" y="210">test split</text>
+
+    <rect x="700" y="282" width="128" height="18" fill="#f7f8fa"/>
+    <text class="edge" x="704" y="296">bester Checkpoint</text>
+
+    <rect x="428" y="396" width="176" height="18" fill="#ffffff"/>
+    <text class="edge" x="432" y="410">Merge-Regel ist die einzige Variable</text>
+  </g>
+
+  <text class="note" x="30" y="576">Zwischen den Schichten liegen Dateien, kein Prozesszustand.</text>
+  <text class="note" x="30" y="598" style="font-weight:400;fill:#4b4f57">Deshalb ist jede Stufe einzeln wiederholbar, cachebar und parallelisierbar — und jede Metrik bis zum Rohdatensatz zurückverfolgbar.</text>
+</svg>
