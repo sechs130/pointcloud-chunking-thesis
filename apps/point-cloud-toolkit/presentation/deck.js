@@ -23,6 +23,46 @@
 
   var speakerWindow = null;
 
+  function buildPipelineNavigation() {
+    var items = [
+      ['1', 'Daten erfassen', '#/daten-verstehen'],
+      ['2', 'Daten zerlegen', '#/zerlegen'],
+      ['3', 'KI anwenden', '#/ki-anwenden'],
+      ['4', 'Ergebnisse vereinen', '#/vereinen'],
+      ['5', 'Qualität messen', '#/qualitaet'],
+      ['6', 'Lösung wählen', '#/loesung-waehlen']
+    ];
+    var nav = document.createElement('nav');
+    nav.className = 'pipeline-nav';
+    nav.setAttribute('aria-label', 'Gliederung der Präsentation');
+    items.forEach(function (item, index) {
+      var link = document.createElement('a');
+      link.href = item[2];
+      link.dataset.step = String(index + 1);
+      link.innerHTML = '<b>' + item[0] + '</b>' + item[1];
+      nav.appendChild(link);
+    });
+    document.body.appendChild(nav);
+    return nav;
+  }
+
+  function updatePipelineNavigation(nav) {
+    if (!nav || typeof Reveal === 'undefined') return;
+    var slide = Reveal.getCurrentSlide();
+    var slides = Reveal.getSlides();
+    var currentIndex = slides.indexOf(slide);
+    var backupIndex = slides.findIndex(function (item) { return item.classList.contains('backup-divider'); });
+    document.body.classList.toggle('on-title', currentIndex === 0);
+    document.body.classList.toggle('on-backup', Boolean(slide && (slide.classList.contains('demo-slide') || (backupIndex >= 0 && currentIndex >= backupIndex))));
+    var step = 0;
+    if (slide) {
+      for (var i = 1; i <= 6; i += 1) if (slide.classList.contains('step-' + i)) step = i;
+    }
+    Array.prototype.forEach.call(nav.querySelectorAll('a'), function (link) {
+      link.classList.toggle('active', Number(link.dataset.step) === step);
+    });
+  }
+
   function readPosition() {
     try {
       var raw = sessionStorage.getItem(POSITION_KEY);
@@ -208,6 +248,7 @@
   }
 
   function wire() {
+    var pipelineNav = buildPipelineNavigation();
     Array.prototype.forEach.call(
       document.querySelectorAll('.method-card, .evidence-card'),
       function (card) {
@@ -285,6 +326,11 @@
       });
     }
     listenToSpeaker();
+
+    if (typeof Reveal !== 'undefined' && Reveal.on) {
+      Reveal.on('ready', function () { updatePipelineNavigation(pipelineNav); });
+      Reveal.on('slidechanged', function () { updatePipelineNavigation(pipelineNav); });
+    }
 
     var skip = document.getElementById('deck-skip');
     if (skip) skip.addEventListener('click', goToDemo);

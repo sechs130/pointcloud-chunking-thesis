@@ -142,7 +142,7 @@ Reveal.initialize({
   height: 900,
 
   // Factor of the display size that should remain empty around the content
-  margin: 0.04,
+  margin: 0.035,
 
   // Bounds for smallest/largest possible scale to apply to content
   minScale: 0.2,
