@@ -23,6 +23,10 @@
 
   var speakerWindow = null;
 
+  function deckLanguage() {
+    return document.documentElement.lang === 'en' ? 'en' : 'de';
+  }
+
   function buildPipelineNavigation() {
     var items = [
       ['1', 'Daten erfassen', '#/daten-verstehen'],
@@ -95,8 +99,8 @@
     var context = canvas.getContext('2d');
     var order = ['xy', 'morton', 'kdtree', 'rand_knn', 'rand_cyl', 'bisect_xy_overlap'];
     var names = {
-      xy: 'Raster', morton: 'Z-Kurve', kdtree: 'K-D-Baum',
-      rand_knn: 'Kugeln', rand_cyl: 'Zylinder', bisect_xy_overlap: 'Flächenteilung'
+      de: { xy: 'Raster', morton: 'Z-Kurve', kdtree: 'K-D-Baum', rand_knn: 'Kugeln', rand_cyl: 'Zylinder', bisect_xy_overlap: 'Flächenteilung' },
+      en: { xy: 'Grid', morton: 'Z-order curve', kdtree: 'K-d tree', rand_knn: 'Spheres', rand_cyl: 'Cylinders', bisect_xy_overlap: 'Recursive split' }
     };
     var palette = ['#0a63c9', '#23a879', '#e07435', '#8064b6', '#d0a51f', '#4a91b8', '#bd5071', '#667581'];
     var coords = gallery.coords;
@@ -140,6 +144,12 @@
 
     function render(strategy) {
       var result = gallery.strategies[strategy];
+      var language = deckLanguage();
+      var styles = getComputedStyle(document.documentElement);
+      var surface = styles.getPropertyValue('--surface').trim() || '#f6f7f9';
+      var label = styles.getPropertyValue('--label').trim() || '#16181c';
+      var muted = styles.getPropertyValue('--label-3').trim() || '#7b7f88';
+      var card = styles.getPropertyValue('--bg').trim() || '#ffffff';
       var coverage = new Uint16Array(coords.length);
       var owner = new Int16Array(coords.length);
       owner.fill(-1);
@@ -150,14 +160,14 @@
         });
       });
       context.clearRect(0, 0, canvas.width, canvas.height);
-      context.fillStyle = '#fbfcfd';
+      context.fillStyle = surface;
       context.fillRect(0, 0, canvas.width, canvas.height);
 
-      context.fillStyle = '#555d67';
+      context.fillStyle = muted;
       context.font = '700 18px system-ui';
       context.textAlign = 'center';
-      context.fillText('Reihenfolge der Teilbereiche', canvas.width * 0.25, 22);
-      context.fillText('fertige Teilbereiche', canvas.width * 0.75, 22);
+      context.fillText(language === 'en' ? 'Order of the regions' : 'Reihenfolge der Teilbereiche', canvas.width * 0.25, 22);
+      context.fillText(language === 'en' ? 'completed regions' : 'fertige Teilbereiche', canvas.width * 0.75, 22);
 
       result.chunks.forEach(function (chunk, chunkIndex) {
         var color = palette[chunkIndex % palette.length];
@@ -169,7 +179,7 @@
         var point = project(coordinate, 0);
         context.beginPath();
         context.arc(point[0], point[1], 3.4, 0, Math.PI * 2);
-        context.fillStyle = '#d9dde2';
+        context.fillStyle = muted;
         context.fill();
       });
 
@@ -182,7 +192,7 @@
         context.fill();
         if (coverage[i] > 1) {
           duplicate += 1;
-          context.strokeStyle = '#16181c';
+          context.strokeStyle = label;
           context.lineWidth = 1.4;
           context.stroke();
         }
@@ -191,19 +201,19 @@
       result.centroids.forEach(function (centroid, index) {
         var point = project(centroid, 0);
         var labelSize = result.count > 20 ? 17 : 21;
-        context.fillStyle = '#ffffff';
+        context.fillStyle = card;
         context.fillRect(point[0] - labelSize / 2, point[1] - labelSize / 2, labelSize, labelSize);
         context.strokeStyle = palette[index % palette.length];
         context.lineWidth = 2.2;
         context.strokeRect(point[0] - labelSize / 2, point[1] - labelSize / 2, labelSize, labelSize);
-        context.fillStyle = '#16181c';
+        context.fillStyle = label;
         context.font = '700 ' + (result.count > 20 ? 10 : 12) + 'px system-ui';
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillText(String(index + 1), point[0], point[1] + 0.5);
       });
 
-      explorer.querySelector('[data-chunk-name]').textContent = names[strategy];
+      explorer.querySelector('[data-chunk-name]').textContent = names[language][strategy];
       explorer.querySelector('[data-chunk-count]').textContent = String(result.count);
       explorer.querySelector('[data-chunk-overlap]').textContent = Math.round(duplicate / coords.length * 100) + ' %';
       Array.prototype.forEach.call(explorer.querySelectorAll('[data-strategy]'), function (button) {
@@ -227,7 +237,9 @@
       autoplay = !autoplay;
       toggle.classList.toggle('active', autoplay);
       toggle.setAttribute('aria-pressed', autoplay ? 'true' : 'false');
-      toggle.textContent = autoplay ? 'Automatisch' : 'Angehalten';
+      toggle.textContent = autoplay
+        ? (deckLanguage() === 'en' ? 'Automatic' : 'Automatisch')
+        : (deckLanguage() === 'en' ? 'Paused' : 'Angehalten');
     });
 
     render('xy');
@@ -237,14 +249,25 @@
       currentIndex = (currentIndex + 1) % order.length;
       render(order[currentIndex]);
     }, 3200);
+    window.addEventListener('pct-languagechange', function () {
+      toggle.textContent = autoplay
+        ? (deckLanguage() === 'en' ? 'Automatic' : 'Automatisch')
+        : (deckLanguage() === 'en' ? 'Paused' : 'Angehalten');
+      render(order[currentIndex]);
+    });
+    window.addEventListener('pct-themechange', function () { render(order[currentIndex]); });
   }
 
   function initResultChart() {
     var svg = document.querySelector('[data-result-chart]');
     var results = window.PointCloudEvidence && window.PointCloudEvidence.results;
     if (!svg || !results) return;
+    svg.replaceChildren();
+    var english = deckLanguage() === 'en';
     var ns = 'http://www.w3.org/2000/svg';
-    var names = { xy: 'Raster', morton: 'Z-Kurve', kdtree: 'K-D-Baum', bisect_xy_overlap: 'Flächenteilung', rand_knn: 'Kugeln', rand_cyl: 'Zylinder' };
+    var names = english
+      ? { xy: 'Grid', morton: 'Z-order', kdtree: 'k-d tree', bisect_xy_overlap: 'Plane split', rand_knn: 'Spheres', rand_cyl: 'Cylinders' }
+      : { xy: 'Raster', morton: 'Z-Kurve', kdtree: 'K-D-Baum', bisect_xy_overlap: 'Flächenteilung', rand_knn: 'Kugeln', rand_cyl: 'Zylinder' };
     var rows = Object.keys(results.chunkers).map(function (id) {
       var row = results.chunkers[id];
       var merge = row.merges[row.best_merge];
@@ -270,8 +293,8 @@
       add('line', { x1: left, y1: y(tick), x2: right, y2: y(tick), class: 'chart-grid' });
       add('text', { x: 66, y: y(tick) + 6, class: 'chart-tick', 'text-anchor': 'end' }, tick.toFixed(1).replace('.', ','));
     });
-    add('text', { x: right, y: 412, class: 'chart-label', 'text-anchor': 'end' }, 'Gesamtlaufzeit');
-    add('text', { x: 18, y: top, class: 'chart-label' }, 'Qualität');
+    add('text', { x: right, y: 412, class: 'chart-label', 'text-anchor': 'end' }, english ? 'Total runtime' : 'Gesamtlaufzeit');
+    add('text', { x: 18, y: top, class: 'chart-label' }, english ? 'Quality' : 'Qualität');
     rows.forEach(function (row) {
       var winner = row.id === 'kdtree';
       add('circle', { cx: x(row.hours), cy: y(row.quality), r: winner ? 13 : 8, class: winner ? 'chart-point winner' : 'chart-point' });
@@ -583,6 +606,7 @@
     prepareSlideLayouts();
     initChunkExplorer();
     initResultChart();
+    window.addEventListener('pct-languagechange', initResultChart);
     wire();
     if (typeof Reveal !== 'undefined' && Reveal.isReady && Reveal.isReady()) {
       restorePosition();

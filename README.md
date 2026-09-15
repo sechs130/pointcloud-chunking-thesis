@@ -93,4 +93,4 @@ Vollversion braucht, erreicht mich über mein GitHub-Profil.
 ---
 
 *Statischer Build. Erzeugt mit `node tools/dist.mjs` aus dem privaten
-Entwicklungs-Repository; 78 Dateien, 16.5 MB, keine externe Laufzeitabhängigkeit.*
+Entwicklungs-Repository; 79 Dateien, 16.6 MB, keine externe Laufzeitabhängigkeit.*
