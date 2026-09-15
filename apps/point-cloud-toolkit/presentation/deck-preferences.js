@@ -4,9 +4,11 @@
 
   var THEME_KEY = 'pct-deck-theme';
   var LANGUAGE_KEY = 'pct-deck-language';
+  var READING_KEY = 'pct-deck-reading';
   var currentLanguage = 'de';
   var narrating = false;
   var advancingNarration = false;
+  var reading = false;
   var textOrigins = new WeakMap();
   var attributeOrigins = new WeakMap();
 
@@ -127,6 +129,11 @@
     'Zurück zum App Hub': 'Back to the App Hub',
     'Sprecheransicht in einem zweiten Fenster öffnen': 'Open speaker view in a second window',
     'Automatische Vertonung starten': 'Start automatic narration',
+    'Erklärung': 'Explanation',
+    'Erklärung neben der Folie anzeigen': 'Show an explanation beside the slide',
+    'Erklärung zur aktuellen Folie': 'Explanation of the current slide',
+    'Erklärung schließen': 'Close explanation',
+    'Die Erklärung folgt automatisch der aktuellen Folie.': 'The explanation automatically follows the current slide.',
     'Systemeinstellung': 'System setting',
     'Helles Farbschema': 'Light theme',
     'Dunkles Farbschema': 'Dark theme',
@@ -297,6 +304,40 @@
     if (label) label.textContent = narrating ? (currentLanguage === 'en' ? 'Stop' : 'Stopp') : 'Auto';
   }
 
+  function updateReadingPanel() {
+    var panel = document.getElementById('deck-reading-panel');
+    if (!panel || typeof Reveal === 'undefined') return;
+    var slides = Reveal.getSlides();
+    var current = Reveal.getCurrentSlide();
+    var index = slides.indexOf(current);
+    var title = current && current.querySelector('h1, h2');
+    var position = document.getElementById('reading-position');
+    var heading = document.getElementById('reading-title');
+    var copy = document.getElementById('reading-copy');
+    if (position) position.textContent = currentLanguage === 'en'
+      ? 'SLIDE ' + (index + 1) + ' OF ' + slides.length
+      : 'FOLIE ' + (index + 1) + ' VON ' + slides.length;
+    if (heading) heading.textContent = title ? title.textContent.trim() : '';
+    if (copy) copy.textContent = NARRATION[currentLanguage][index] || '';
+  }
+
+  function applyReading(value) {
+    reading = Boolean(value);
+    document.body.classList.toggle('deck-reading-open', reading);
+    var panel = document.getElementById('deck-reading-panel');
+    var button = document.getElementById('deck-reading');
+    if (panel) panel.setAttribute('aria-hidden', reading ? 'false' : 'true');
+    if (button) {
+      button.classList.toggle('active', reading);
+      button.setAttribute('aria-expanded', reading ? 'true' : 'false');
+    }
+    store(READING_KEY, reading ? 'open' : 'closed');
+    if (reading) updateReadingPanel();
+    if (typeof Reveal !== 'undefined' && Reveal.layout) {
+      window.setTimeout(function () { Reveal.layout(); }, 50);
+    }
+  }
+
   function stopNarration() {
     narrating = false;
     advancingNarration = false;
@@ -320,6 +361,7 @@
       button.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
     updateNarrationButton();
+    updateReadingPanel();
     window.dispatchEvent(new CustomEvent('pct-languagechange', { detail: currentLanguage }));
   }
 
@@ -384,16 +426,31 @@
     });
     var autoplay = document.getElementById('deck-autoplay');
     if (autoplay) autoplay.addEventListener('click', toggleNarration);
+    var readingButton = document.getElementById('deck-reading');
+    if (readingButton) readingButton.addEventListener('click', function () { applyReading(!reading); });
+    var readingClose = document.getElementById('reading-close');
+    if (readingClose) readingClose.addEventListener('click', function () { applyReading(false); });
     applyLanguage(currentLanguage);
+    applyReading(saved(READING_KEY, 'closed') === 'open');
     if (typeof Reveal !== 'undefined' && Reveal.on) {
       Reveal.on('slidechanged', function () {
         if (narrating && !advancingNarration) stopNarration();
+        updateReadingPanel();
       });
     }
+    document.addEventListener('keydown', function (event) {
+      if ((event.key === 'e' || event.key === 'E') && !event.altKey && !event.ctrlKey && !event.metaKey) {
+        var target = event.target;
+        if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+        event.preventDefault();
+        applyReading(!reading);
+      }
+    });
     window.PointCloudDeckPreferences = {
       language: function () { return currentLanguage; },
       theme: applyTheme,
       setLanguage: applyLanguage,
+      setReading: applyReading,
       stopNarration: stopNarration
     };
   }
