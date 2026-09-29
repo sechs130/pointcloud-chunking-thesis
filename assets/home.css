@@ -73,6 +73,18 @@ body {
   border-radius: var(--r-full);
 }
 
+.portfolio-back {
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 640;
+  text-decoration: none;
+}
+
+.portfolio-back:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 /* --- Inhalt ------------------------------------------------------------- */
 
 main {
